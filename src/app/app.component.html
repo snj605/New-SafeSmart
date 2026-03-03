@@ -1,0 +1,218 @@
+@if (loading()) {
+<div class="min-h-screen bg-brand-darkest flex items-center justify-center">
+  <div class="text-center">
+    <div class="w-16 h-16 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto mb-4">
+    </div>
+    <p class="text-white font-bold uppercase tracking-widest text-xs">Loading Secure Environment...</p>
+  </div>
+</div>
+} @else {
+<div
+  class="min-h-screen flex flex-col font-sans selection:bg-brand-primary selection:text-white relative bg-brand-body text-brand-mainText">
+
+  @if (viewMode() === 'staging') {
+  <div
+    class="bg-amber-100 text-amber-900 py-3 px-6 flex justify-between items-center z-[200] sticky top-0 border-b border-amber-200">
+    <span class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+      <i class="fas fa-info-circle text-amber-600"></i> Staging Environment: Previewing Unpublished Content
+    </span>
+    <button (click)="handleSetViewMode('production')"
+      class="bg-brand-darkest text-white px-4 py-1.5 rounded-lg text-[10px] font-black uppercase hover:bg-black transition-colors">
+      Exit Preview
+    </button>
+  </div>
+  }
+
+  <!-- Navigation -->
+  <nav
+    class="bg-brand-nav text-brand-navText sticky top-0 z-[100] border-b border-white/20 shadow-sm h-20 flex items-center">
+    <div class="container mx-auto px-6 flex justify-between items-center">
+      <a routerLink="/" class="group ml-10" (click)="closeMobileMenu()">
+        <div
+          class="bg-gray-100 px-4 py-2 rounded-2xl border border-gray-200 transition-all group-hover:shadow-lg h-14 flex items-center">
+          <img [src]="logoPath" alt="SafeSmart Logo" class="h-full w-auto object-contain" />
+        </div>
+      </a>
+
+      <div class="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-wider">
+        <a routerLink="/" routerLinkActive="text-brand-primary" [routerLinkActiveOptions]="{exact: true}"
+          class="hover:opacity-70 transition">Home</a>
+        <a routerLink="/about" class="hover:opacity-70 transition">About Us</a>
+
+        <div class="relative group py-4" (mouseenter)="isDropdownOpen.set(true)"
+          (mouseleave)="isDropdownOpen.set(false)">
+          <button class="flex items-center gap-1.5 hover:opacity-70 transition">
+            Products <i class="fas fa-chevron-down text-[8px]"></i>
+          </button>
+          @if (isDropdownOpen()) {
+          <div
+            class="absolute top-full -left-4 w-64 bg-brand-nav shadow-2xl rounded-xl py-4 flex flex-col border border-brand-navBorder animate-fade-in">
+            @for (cat of categories(); track cat.id) {
+            <a [routerLink]="['/category', slugify(cat.name)]"
+              class="px-6 py-3 hover:bg-white/10 text-brand-navText transition" (click)="isDropdownOpen.set(false)">
+              {{ cat.name }}
+            </a>
+            }
+          </div>
+          }
+        </div>
+
+        <a routerLink="/blog" class="hover:opacity-70 transition">Blog</a>
+        <a routerLink="/contact" class="hover:opacity-70 transition">Contact Us</a>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <button (click)="toggleMobileMenu()"
+          class="lg:hidden w-10 h-10 flex flex-col items-center justify-center gap-1.5 focus:outline-none">
+          <span class="w-6 h-0.5 bg-brand-navText transition-all" [class.rotate-45]="isMobileMenuOpen()"
+            [class.translate-y-2]="isMobileMenuOpen()"></span>
+          <span class="w-6 h-0.5 bg-brand-navText transition-all" [class.opacity-0]="isMobileMenuOpen()"></span>
+          <span class="w-6 h-0.5 bg-brand-navText transition-all" [class.-rotate-45]="isMobileMenuOpen()"
+            [class.-translate-y-2]="isMobileMenuOpen()"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="lg:hidden fixed inset-0 z-[105] transition-all duration-300" [class.opacity-100]="isMobileMenuOpen()"
+    [class.pointer-events-auto]="isMobileMenuOpen()" [class.opacity-0]="!isMobileMenuOpen()"
+    [class.pointer-events-none]="!isMobileMenuOpen()">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" (click)="closeMobileMenu()"></div>
+    <div
+      class="absolute right-0 top-0 h-full w-[85%] bg-brand-nav text-brand-navText shadow-2xl transition-transform duration-300 transform p-8 overflow-y-auto"
+      [class.translate-x-0]="isMobileMenuOpen()" [class.translate-x-full]="!isMobileMenuOpen()">
+      <div class="mb-10 flex justify-between items-center">
+        <div class="bg-gray-100 px-4 py-2.5 rounded-2xl border border-gray-200 inline-flex items-center">
+          <img [src]="logoPath" alt="Logo" class="h-16 w-auto" />
+        </div>
+        <button (click)="closeMobileMenu()" class="text-xl text-brand-navText"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="space-y-4">
+        <a routerLink="/" class="block text-lg font-bold border-b border-white/5 pb-4"
+          (click)="closeMobileMenu()">Home</a>
+        <a routerLink="/about" class="block text-lg font-bold border-b border-white/5 pb-4"
+          (click)="closeMobileMenu()">About Us</a>
+
+        <div class="border-b border-white/5 pb-4">
+          <button (click)="toggleMobileProducts()" class="flex items-center justify-between w-full text-lg font-bold">
+            <span>Products</span>
+            <i class="fas text-xs transition-transform" [class.fa-chevron-up]="isMobileProductsOpen()"
+              [class.fa-chevron-down]="!isMobileProductsOpen()"></i>
+          </button>
+          <div class="mt-4 space-y-3 pl-4 overflow-hidden transition-all duration-300"
+            [style.max-height]="isMobileProductsOpen() ? '500px' : '0'"
+            [style.opacity]="isMobileProductsOpen() ? '1' : '0'">
+            <a routerLink="/category/all" class="block text-sm font-bold text-brand-primary"
+              (click)="closeMobileMenu()">
+              All Products
+            </a>
+            @for (cat of categories(); track cat.id) {
+            <a [routerLink]="['/category', slugify(cat.name)]"
+              class="block text-sm text-brand-navText/70 hover:text-brand-primary transition-colors"
+              (click)="closeMobileMenu()">
+              {{ cat.name }}
+            </a>
+            }
+          </div>
+        </div>
+
+        <a routerLink="/blog" class="block text-lg font-bold border-b border-white/5 pb-4"
+          (click)="closeMobileMenu()">Blog</a>
+        <a routerLink="/contact" class="block text-lg font-bold border-b border-white/5 pb-4"
+          (click)="closeMobileMenu()">Contact Us</a>
+      </div>
+    </div>
+  </div>
+
+  <main class="flex-grow">
+    <router-outlet></router-outlet>
+  </main>
+
+  <app-whatsapp-widget [number]="appData().content.contact.whatsapp"
+    [message]="appData().content.contact.whatsappMessage || ''"></app-whatsapp-widget>
+
+  <footer class="bg-brand-footer text-brand-footerText py-24 border-t border-brand-navBorder relative overflow-hidden">
+    <div class="absolute inset-0 opacity-5 yogi-pattern pointer-events-none"></div>
+    <div class="container mx-auto px-6 relative z-10">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
+        <div class="col-span-1 md:col-span-1">
+          <div
+            class="bg-white inline-block px-6 py-4 rounded-2xl border border-gray-100 shadow-lg shadow-black/5 mb-10">
+            <img [src]="logoPath" alt="Logo" class="h-28 w-auto" />
+          </div>
+          <p class="text-[11px] leading-loose mb-10 opacity-70 font-bold uppercase tracking-widest">Securing Legacies &
+            High-Value Assets Through Modern Engineering Since Inception.</p>
+          <div class="flex gap-4">
+            @for (social of appData().content.contact.social | keyvalue; track social.key) {
+            @if (social.value) {
+            <a [href]="social.value" target="_blank" rel="noreferrer"
+              class="w-10 h-10 rounded-xl bg-white/10 border border-white/10 flex items-center justify-center hover:bg-brand-primary hover:text-white transition-all transform hover:scale-110">
+              <i [class]="'fab fa-' + (social.key === 'facebook' ? 'facebook-f' : social.key)"></i>
+            </a>
+            }
+            }
+          </div>
+        </div>
+        <div>
+          <h4 class="text-brand-primary font-black text-[10px] uppercase tracking-[0.4em] mb-8">Intelligence Hub</h4>
+          <ul class="space-y-4 text-[10px] font-black uppercase tracking-widest opacity-70">
+            @for (cat of categories().slice(0, 4); track cat.id) {
+            <li><a [routerLink]="['/category', slugify(cat.name)]"
+                class="hover:opacity-100 hover:text-brand-primary transition-colors">{{ cat.name }}</a></li>
+            }
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-brand-primary font-black text-[10px] uppercase tracking-[0.4em] mb-8">Navigation</h4>
+          <ul class="space-y-4 text-[10px] font-black uppercase tracking-widest opacity-70">
+            <li><a routerLink="/about" class="hover:opacity-100 hover:text-brand-primary transition-colors">Our
+                Purpose</a></li>
+            <li><a routerLink="/contact" class="hover:opacity-100 hover:text-brand-primary transition-colors">Strategic
+                Support</a></li>
+            <li><a routerLink="/blog" class="hover:opacity-100 hover:text-brand-primary transition-colors">Security
+                Intelligence</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-brand-primary font-black text-[10px] uppercase tracking-[0.4em] mb-8">Strategic HQ</h4>
+          <div class="space-y-4 text-[11px] opacity-70 font-bold uppercase tracking-widest leading-relaxed">
+            <a [href]="'https://www.google.com/maps/search/?api=1&query=' + appData().content.contact.address"
+              target="_blank" class="hover:text-brand-primary transition-colors flex items-start gap-3">
+              <i class="fas fa-map-marker-alt text-brand-primary mt-1 w-4 flex-shrink-0"></i>
+              <span>{{ appData().content.contact.address }}</span>
+            </a>
+            <div class="flex flex-col gap-2">
+              <a [href]="'tel:' + (appData().content.contact.phone.replace(' ', '') || '')"
+                class="font-black text-white text-sm hover:text-brand-primary transition-colors flex items-center gap-3">
+                <i class="fas fa-phone-alt text-brand-primary w-4"></i>
+                {{ appData().content.contact.phone }}
+              </a>
+              @if (appData().content.contact.phone2; as p2) {
+              <a [href]="'tel:' + (p2.replace(' ', '') || '')"
+                class="font-black text-white text-sm hover:text-brand-primary transition-colors flex items-center gap-3">
+                <i class="fas fa-phone-alt text-brand-primary w-4"></i>
+                {{ p2 }}
+              </a>
+              }
+            </div>
+            <a [href]="'mailto:' + appData().content.contact.email"
+              class="hover:text-brand-primary transition-colors flex items-center gap-3">
+              <i class="fas fa-envelope text-brand-primary w-4"></i>
+              <span>{{ appData().content.contact.email }}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div
+        class="pt-12 border-t border-white/10 text-[9px] opacity-50 font-black uppercase tracking-[0.4em] flex flex-col md:flex-row justify-between gap-6">
+        <p>© 2025 SAFESMART SECURITY SYSTEMS. THE NEW STANDARD IN PROTECTION.</p>
+        <div class="flex gap-10">
+          <a href="#" class="hover:opacity-100 hover:text-brand-primary transition-colors">Privacy Shield</a>
+          <a href="#" class="hover:opacity-100 hover:text-brand-primary transition-colors">Terms of Defense</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+}
