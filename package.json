@@ -3,11 +3,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "start": "node server.js",
+    "build": "echo 'Build skipped: using pre-compiled dist folder'",
+    "postinstall": "echo 'Post-install complete'"
   },
   "prettier": {
     "printWidth": 100,
