@@ -38,6 +38,11 @@ app.use(express.static(distPath));
 
 // MongoDB Connection
 const MONGO_URI = process.env.MONGO_URI;
+console.log('📡 Environment Check:');
+console.log('- __dirname:', __dirname);
+console.log('- process.cwd():', process.cwd());
+console.log('- NODE_ENV:', process.env.NODE_ENV);
+console.log('- PORT:', process.env.PORT);
 
 if (!MONGO_URI) {
     console.error('❌ CRITICAL ERROR: MONGO_URI is not defined in environment variables');
