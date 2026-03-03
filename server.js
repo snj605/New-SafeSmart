@@ -15,11 +15,24 @@ app.use(bodyParser.json({ limit: '50mb' }));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Standalone mode: dist is in a subfolder with modern Angular builds
-const distPath = path.join(__dirname, 'dist', 'new-safesmart-angular', 'browser');
-if (!fs.existsSync(distPath)) {
-    console.warn('⚠️ WARNING: "dist" folder not found. Did you run "npm run build" yet?');
-}
+// Enhanced dist path resolution for different environments
+const getDistPath = () => {
+    const paths = [
+        path.join(__dirname, 'dist', 'new-safesmart-angular', 'browser'),
+        path.join(__dirname, 'dist', 'browser'),
+        path.join(__dirname, 'dist'),
+        path.join(__dirname, 'browser')
+    ];
+    for (const p of paths) {
+        if (fs.existsSync(p) && fs.existsSync(path.join(p, 'index.html'))) {
+            return p;
+        }
+    }
+    return paths[0]; // fallback
+};
+
+const distPath = getDistPath();
+console.log('📂 Serving static files from:', distPath);
 
 app.use(express.static(distPath));
 
