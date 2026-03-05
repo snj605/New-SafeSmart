@@ -13,8 +13,8 @@ import { CommonContactFormComponent } from '../common-contact-form/common-contac
       <section class="bg-brand-darkest py-20 text-white text-center relative overflow-hidden">
         <div class="absolute inset-0 opacity-5 yogi-pattern pointer-events-none"></div>
         <div class="container mx-auto px-4 relative z-10">
-          <h1 class="text-5xl font-black uppercase italic mb-4">Secure Channel</h1>
-          <p class="text-brand-lightest uppercase tracking-widest text-xs">Direct Access to Our Security Experts</p>
+          <h1 class="text-3xl md:text-5xl font-black uppercase italic mb-4">Secure Channel</h1>
+          <p class="text-brand-lightest uppercase tracking-widest text-[10px] md:text-xs">Direct Access to Our Security Experts</p>
         </div>
       </section>
 

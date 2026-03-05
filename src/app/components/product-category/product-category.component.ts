@@ -14,8 +14,8 @@ import { Product, Category } from '../../models/types';
       <section class="bg-brand-darkest py-24 text-white relative overflow-hidden">
         <div class="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1544377193-33dcf4d68fb5?q=80&w=1920')] bg-cover bg-fixed"></div>
         <div class="container mx-auto px-6 relative z-10 text-center">
-          <span class="text-brand-primary font-black uppercase tracking-[0.4em] text-[10px] mb-4 block">Manufacturing Excellence</span>
-          <h1 class="text-5xl md:text-7xl font-black uppercase italic tracking-tighter mb-6">{{ categoryName() }}</h1>
+          <span class="text-brand-primary font-black uppercase tracking-[0.4em] text-[8px] md:text-[10px] mb-4 block">Manufacturing Excellence</span>
+          <h1 class="text-3xl md:text-7xl font-black uppercase italic tracking-tighter mb-6">{{ categoryName() }}</h1>
           <p class="text-brand-lightest text-sm uppercase tracking-widest max-w-2xl mx-auto italic font-light">
             Engineered for high-value asset protection. Our {{ categoryName() }} range meets global industry standards.
           </p>

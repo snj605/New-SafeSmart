@@ -1,5 +1,5 @@
 
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../services/data.service';
@@ -80,7 +80,20 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
         </div>
       }
 
-      <aside class="w-full lg:w-80 glass-dark text-white flex flex-col sticky top-0 lg:h-screen z-50 shadow-2xl border-none">
+      <!-- Mobile Header for Admin -->
+      <div class="lg:hidden bg-brand-darkest text-white p-4 flex items-center justify-between sticky top-0 z-[60] border-b border-white/10">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center text-white">
+            <i class="fas fa-shield-halved text-xs"></i>
+          </div>
+          <span class="text-xs font-black italic tracking-tighter">CMS ENGINE</span>
+        </div>
+        <button (click)="toggleSidebar()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10">
+          <i [class]="'fas ' + (isSidebarOpen() ? 'fa-times' : 'fa-bars')"></i>
+        </button>
+      </div>
+
+      <aside [class]="'w-full lg:w-80 glass-dark text-white flex flex-col fixed lg:sticky top-0 lg:h-screen z-50 shadow-2xl border-none transition-all duration-300 ' + (isSidebarOpen() ? 'translate-x-0' : '-translate-x-full lg:translate-x-0')">
         <div class="p-10 border-b border-white/5">
           <div class="flex items-center gap-4 mb-10">
             <div class="w-12 h-12 bg-brand-primary rounded-2xl flex items-center justify-center text-white shadow-lg">
@@ -124,10 +137,10 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
       </aside>
 
       <div class="flex-grow flex flex-col min-w-0">
-        <header class="h-20 glass border-b border-slate-200/50 px-12 flex items-center justify-between sticky top-0 z-40">
+        <header class="h-20 lg:h-20 bg-white lg:glass border-b border-slate-200/50 px-6 lg:px-12 flex items-center justify-between sticky top-0 z-40">
           <div class="flex items-center gap-4">
-            <span class="w-2 h-8 bg-brand-primary rounded-full"></span>
-            <h1 class="text-2xl font-black text-brand-darkest uppercase italic tracking-tighter">{{ activeTab() }}</h1>
+            <span class="w-1.5 h-6 lg:w-2 lg:h-8 bg-brand-primary rounded-full"></span>
+            <h1 class="text-lg lg:text-2xl font-black text-brand-darkest uppercase italic tracking-tighter truncate max-w-[150px] md:max-w-none">{{ activeTab() }}</h1>
           </div>
           
           <div class="flex items-center gap-6">
@@ -141,7 +154,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
           </div>
         </header>
 
-        <main class="p-8 md:p-12 overflow-y-auto bg-slate-50/50">
+        <main class="p-6 md:p-12 overflow-y-auto bg-slate-50/50">
           <div class="max-w-5xl mx-auto pb-20">
             @if (!appData()) {
               <div class="flex flex-col items-center justify-center py-20 animate-reveal">
@@ -149,7 +162,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                 <p class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Decrypting Strategy Vault...</p>
               </div>
             } @else {
-              <div class="glass rounded-[48px] shadow-3xl border border-white/60 p-10 md:p-16 relative overflow-hidden animate-reveal">
+              <div class="glass rounded-[32px] md:rounded-[48px] shadow-3xl border border-white/60 p-6 md:p-16 relative overflow-hidden animate-reveal">
                  <div class="absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-[100px] -mr-48 -mt-48"></div>
               @if (activeTab() === 'Home Page') {
               <div class="space-y-16">
@@ -159,9 +172,15 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                     @for (slide of appData().content.home.hero.slides; track slide.id; let idx = $index) {
                       <div class="bg-slate-50/50 p-8 md:p-10 rounded-[40px] border border-slate-100 relative group hover:bg-white hover:shadow-2xl transition-all duration-500">
                         <button (click)="removeListItem('content.home.hero.slides', idx)" class="absolute top-6 right-6 text-red-400 hover:text-red-600 w-10 h-10 rounded-xl bg-white border flex items-center justify-center transition shadow-sm"><i class="fas fa-trash-alt"></i></button>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <input class="w-full bg-white p-4 rounded-xl text-sm font-bold border outline-none" placeholder="Headline" [(ngModel)]="slide.title" />
-                          <input class="w-full bg-white p-4 rounded-xl text-sm border outline-none" placeholder="Sub-headline" [(ngModel)]="slide.subtitle" />
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                          <div class="space-y-2">
+                             <label class="text-[9px] font-black uppercase tracking-widest opacity-50 ml-1">Headline</label>
+                             <input class="w-full bg-white p-3 md:p-4 rounded-xl text-sm font-bold border outline-none" placeholder="Headline" [(ngModel)]="slide.title" />
+                          </div>
+                          <div class="space-y-2">
+                             <label class="text-[9px] font-black uppercase tracking-widest opacity-50 ml-1">Sub-headline</label>
+                             <input class="w-full bg-white p-3 md:p-4 rounded-xl text-sm border outline-none" placeholder="Sub-headline" [(ngModel)]="slide.subtitle" />
+                          </div>
                           <div class="md:col-span-2">
                              <div class="flex gap-4 items-center">
                                 <div class="w-20 h-20 bg-white border rounded-xl flex-shrink-0 overflow-hidden">
@@ -376,8 +395,8 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
 
       <!-- Edit Modal - Unified approach for brevity -->
       @if (editingProduct()) {
-        <div class="fixed inset-0 bg-brand-darkest/60 backdrop-blur-xl flex items-center justify-center z-[200] p-4 animate-fade-in">
-           <div class="bg-white w-full max-w-3xl rounded-[48px] shadow-3xl overflow-hidden animate-reveal border border-white/20 flex flex-col max-h-[95vh]">
+        <div class="fixed inset-0 bg-brand-darkest/60 backdrop-blur-xl flex items-center justify-center z-[200] p-2 md:p-4 animate-fade-in">
+           <div class="bg-white w-full max-w-3xl rounded-[32px] md:rounded-[48px] shadow-3xl overflow-hidden animate-reveal border border-white/20 flex flex-col max-h-[98vh]">
               <div class="bg-gray-50 px-10 py-7 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
                 <div>
                   <h3 class="font-black text-brand-darkest uppercase tracking-widest text-[10px] mb-1">Entity Modification</h3>
@@ -623,6 +642,19 @@ export class AdminPanelComponent implements OnInit {
 
   editingProduct = signal<Product | null>(null);
   editingBlog = signal<BlogPost | null>(null);
+
+  isSidebarOpen = signal(false); // Mobile sidebar state
+
+  @HostListener('window:keydown.escape', ['$event'])
+  handleEscape(event: any) {
+    this.editingProduct.set(null);
+    this.editingBlog.set(null);
+    this.isSidebarOpen.set(false);
+  }
+
+  toggleSidebar() {
+    this.isSidebarOpen.update(v => !v);
+  }
 
   constructor(
     private dataService: DataService,

@@ -1,6 +1,7 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { Component, OnInit, signal, computed, HostListener } from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { filter } from 'rxjs/operators';
 import { DataService } from './services/data.service';
 import { ApiService } from './services/api.service';
 import { WhatsAppWidgetComponent } from './components/whatsapp-widget/whatsapp-widget.component';
@@ -32,7 +33,20 @@ export class AppComponent implements OnInit {
     private dataService: DataService,
     private apiService: ApiService,
     public router: Router
-  ) { }
+  ) {
+    // Auto-close mobile menu on route change
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      this.closeMobileMenu();
+    });
+  }
+
+  @HostListener('window:keydown.escape', ['$event'])
+  handleEscape(event: any) {
+    this.closeMobileMenu();
+    this.isDropdownOpen.set(false);
+  }
 
   ngOnInit() {
     this.fetchData(true);

@@ -12,8 +12,8 @@ import { DataService } from '../../services/data.service';
     <div class="animate-fade-in bg-brand-alt min-h-screen text-brand-mainText">
       <section class="bg-brand-darkest py-20 text-white text-center">
         <div class="container mx-auto px-4">
-          <h1 class="text-5xl font-black uppercase italic mb-4">Security Insights</h1>
-          <p class="text-brand-lightest uppercase tracking-[0.2em] text-xs">Expert advice and the latest industry trends</p>
+          <h1 class="text-3xl md:text-5xl font-black uppercase italic mb-4">Security Insights</h1>
+          <p class="text-brand-lightest uppercase tracking-[0.2em] text-[10px] md:text-xs">Expert advice and the latest industry trends</p>
         </div>
       </section>
 

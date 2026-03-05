@@ -11,7 +11,7 @@ import { DataService } from '../../services/data.service';
   template: `
     <div class="animate-fade-in bg-brand-body text-brand-mainText font-sans">
       <!-- Cinematic Hero Section -->
-      <section class="h-[70vh] md:h-[80vh] relative overflow-hidden bg-brand-darkest">
+      <section class="h-[50vh] md:h-[80vh] relative overflow-hidden bg-brand-darkest">
         <img 
           src="https://images.unsplash.com/photo-1541339907198-e08759df9a73?q=80&w=1920" 
           class="w-full h-full object-cover opacity-50 scale-110" 
