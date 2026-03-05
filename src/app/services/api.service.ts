@@ -1,7 +1,6 @@
-
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { AppData } from '../models/types';
 import { INITIAL_DATA } from '../models/constants';
 import { environment } from '../../environments/environment';
@@ -127,5 +126,9 @@ export class ApiService {
       console.error('Image upload failed', err);
       return null;
     }
+  }
+
+  getInquiries(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.BASE_URL}/inquiries`);
   }
 }

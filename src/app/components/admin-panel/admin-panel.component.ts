@@ -6,7 +6,7 @@ import { DataService } from '../../services/data.service';
 import { ApiService } from '../../services/api.service';
 import { Product, BlogPost, Category, AppData } from '../../models/types';
 
-type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categories' | 'Blog Posts';
+type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categories' | 'Blog Posts' | 'Inquiries';
 
 @Component({
   selector: 'app-admin-panel',
@@ -163,234 +163,302 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
               </div>
             } @else {
               <div class="glass rounded-[32px] md:rounded-[48px] shadow-3xl border border-white/60 p-6 md:p-16 relative overflow-hidden animate-reveal">
-                 <div class="absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-[100px] -mr-48 -mt-48"></div>
-              @if (activeTab() === 'Home Page') {
-              <div class="space-y-16">
-                <div>
-                  <h3 class="text-[11px] font-black text-brand-darkest uppercase tracking-[0.4em] mb-10 border-l-8 border-brand-primary pl-6">Hero Dynamic Slideshow</h3>
-                  <div class="space-y-8">
-                    @for (slide of appData().content.home.hero.slides; track slide.id; let idx = $index) {
-                      <div class="bg-slate-50/50 p-8 md:p-10 rounded-[40px] border border-slate-100 relative group hover:bg-white hover:shadow-2xl transition-all duration-500">
-                        <button (click)="removeListItem('content.home.hero.slides', idx)" class="absolute top-6 right-6 text-red-400 hover:text-red-600 w-10 h-10 rounded-xl bg-white border flex items-center justify-center transition shadow-sm"><i class="fas fa-trash-alt"></i></button>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                          <div class="space-y-2">
-                             <label class="text-[9px] font-black uppercase tracking-widest opacity-50 ml-1">Headline</label>
-                             <input class="w-full bg-white p-3 md:p-4 rounded-xl text-sm font-bold border outline-none" placeholder="Headline" [(ngModel)]="slide.title" />
-                          </div>
-                          <div class="space-y-2">
-                             <label class="text-[9px] font-black uppercase tracking-widest opacity-50 ml-1">Sub-headline</label>
-                             <input class="w-full bg-white p-3 md:p-4 rounded-xl text-sm border outline-none" placeholder="Sub-headline" [(ngModel)]="slide.subtitle" />
-                          </div>
-                          <div class="md:col-span-2">
-                             <div class="flex gap-4 items-center">
-                                <div class="w-20 h-20 bg-white border rounded-xl flex-shrink-0 overflow-hidden">
-                                  @if (slide.image) { <img [src]="slide.image" class="w-full h-full object-cover" /> }
-                                </div>
-                                 <div class="flex-grow space-y-2">
-                                   <label class="text-[9px] font-black uppercase tracking-widest mb-1 block opacity-50">Background Image</label>
-                                   <input
-                                     type="file"
-                                     [id]="'home-slide-' + idx"
-                                     class="hidden"
-                                     (change)="onFileSelected($event, 'slide', idx)"
-                                   />
-                                   <label [for]="'home-slide-' + idx" class="w-full block bg-white p-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"><i class="fas fa-folder-open text-xs"></i>Upload File</label>
-                                   <div class="flex items-center gap-2">
-                                     <i class="fas fa-link text-gray-300 text-xs"></i>
-                                     <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[11px] border border-gray-100 outline-none" placeholder="Or paste image URL..." (change)="onUrlInput($any($event.target).value, 'slide', idx)" />
-                                   </div>
+                <div class="absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-[100px] -mr-48 -mt-48"></div>
+
+                @if (activeTab() === 'Inquiries') {
+                  <div class="space-y-8 animate-reveal">
+                    <div class="flex items-center justify-between mb-8">
+                      <div>
+                        <h2 class="text-3xl font-black text-brand-darkest uppercase italic tracking-tighter">User Queries</h2>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Real-time Lead Intelligence</p>
+                      </div>
+                      <button (click)="exportInquiriesToExcel()" class="bg-brand-primary text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:shadow-2xl transition active:scale-95 flex items-center gap-2">
+                        <i class="fas fa-file-excel"></i> Export CSV
+                      </button>
+                    </div>
+
+                    @if (isLoadingInquiries()) {
+                      <div class="flex flex-col items-center justify-center py-20">
+                        <div class="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Loading Inquiries...</p>
+                      </div>
+                    } @else if (inquiries().length === 0) {
+                      <div class="text-center py-20 bg-slate-50 rounded-[32px] border border-slate-100">
+                        <i class="fas fa-inbox text-5xl text-slate-200 mb-4"></i>
+                        <p class="text-xs font-black uppercase tracking-widest text-slate-400">No inquiries found</p>
+                      </div>
+                    } @else {
+                      <div class="overflow-x-auto">
+                        <table class="w-full border-separate border-spacing-y-4">
+                          <thead>
+                            <tr class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-left">
+                              <th class="px-6 pb-2">Ident</th>
+                              <th class="px-6 pb-2">Subject</th>
+                              <th class="px-6 pb-2">Contact</th>
+                              <th class="px-6 pb-2">Date</th>
+                              <th class="px-6 pb-2">Stats</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (item of inquiries(); track item._id) {
+                              <tr class="bg-white hover:bg-slate-50/80 transition group rounded-[24px]">
+                                <td class="px-6 py-8 rounded-l-[24px]">
+                                  <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-xl bg-brand-darkest flex items-center justify-center text-white text-xs font-black">
+                                      {{ (item.name?.[0] || 'Q').toUpperCase() }}
+                                    </div>
+                                    <div>
+                                      <div class="font-black text-brand-darkest text-sm uppercase leading-none mb-1">{{ item.name }}</div>
+                                      <div class="text-[9px] font-bold text-slate-400 tracking-tight">{{ item.email }}</div>
+                                    </div>
+                                  </div>
+                                </td>
+                                <td class="px-6 py-8">
+                                  <div class="font-black text-brand-darkest text-xs uppercase italic truncate max-w-[200px]">{{ item.subject || 'General inquiry' }}</div>
+                                </td>
+                                <td class="px-6 py-8">
+                                  <div class="text-xs font-bold text-slate-600">{{ item.phone || 'No phone' }}</div>
+                                </td>
+                                <td class="px-6 py-8">
+                                  <div class="text-[10px] font-bold text-slate-400">{{ item.createdAt | date:'MMM d, y' }}</div>
+                                </td>
+                                <td class="px-6 py-8 rounded-r-[24px] text-right">
+                                  <button (click)="alert(item.message)" class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-brand-primary hover:text-white transition group-hover:shadow-lg">
+                                    <i class="fas fa-eye text-xs"></i>
+                                  </button>
+                                </td>
+                              </tr>
+                              <tr class="lg:hidden">
+                                <td colspan="5" class="px-6 pb-8 pt-0">
+                                  <div class="bg-slate-100/50 p-6 rounded-2xl border border-slate-100/50">
+                                    <span class="text-[8px] font-black uppercase text-slate-400 tracking-widest block mb-2">Message Intelligence</span>
+                                    <p class="text-xs text-slate-600 leading-relaxed italic">"{{ item.message }}"</p>
+                                  </div>
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    }
+                  </div>
+                } @else if (activeTab() === 'Home Page') {
+                  <div class="space-y-16">
+                    <div>
+                      <h3 class="text-[11px] font-black text-brand-darkest uppercase tracking-[0.4em] mb-10 border-l-8 border-brand-primary pl-6">Hero Dynamic Slideshow</h3>
+                      <div class="space-y-8">
+                        @for (slide of appData().content.home.hero.slides; track slide.id; let idx = $index) {
+                          <div class="bg-slate-50/50 p-8 md:p-10 rounded-[40px] border border-slate-100 relative group hover:bg-white hover:shadow-2xl transition-all duration-500">
+                            <button (click)="removeListItem('content.home.hero.slides', idx)" class="absolute top-6 right-6 text-red-400 hover:text-red-600 w-10 h-10 rounded-xl bg-white border flex items-center justify-center transition shadow-sm"><i class="fas fa-trash-alt"></i></button>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                              <div class="space-y-2">
+                                 <label class="text-[9px] font-black uppercase tracking-widest opacity-50 ml-1">Headline</label>
+                                 <input class="w-full bg-white p-3 md:p-4 rounded-xl text-sm font-bold border outline-none" placeholder="Headline" [(ngModel)]="slide.title" />
+                              </div>
+                              <div class="space-y-2">
+                                 <label class="text-[9px] font-black uppercase tracking-widest opacity-50 ml-1">Sub-headline</label>
+                                 <input class="w-full bg-white p-3 md:p-4 rounded-xl text-sm border outline-none" placeholder="Sub-headline" [(ngModel)]="slide.subtitle" />
+                              </div>
+                              <div class="md:col-span-2">
+                                 <div class="flex gap-4 items-center">
+                                    <div class="w-20 h-20 bg-white border rounded-xl flex-shrink-0 overflow-hidden">
+                                      @if (slide.image) { <img [src]="slide.image" class="w-full h-full object-cover" /> }
+                                    </div>
+                                     <div class="flex-grow space-y-2">
+                                       <label class="text-[9px] font-black uppercase tracking-widest mb-1 block opacity-50">Background Image</label>
+                                       <input
+                                         type="file"
+                                         [id]="'home-slide-' + idx"
+                                         class="hidden"
+                                         (change)="onFileSelected($event, 'slide', idx)"
+                                       />
+                                       <label [for]="'home-slide-' + idx" class="w-full block bg-white p-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"><i class="fas fa-folder-open text-xs"></i>Upload File</label>
+                                       <div class="flex items-center gap-2">
+                                         <i class="fas fa-link text-gray-300 text-xs"></i>
+                                         <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[11px] border border-gray-100 outline-none" placeholder="Or paste image URL..." (change)="onUrlInput($any($event.target).value, 'slide', idx)" />
+                                       </div>
+                                     </div>
                                  </div>
-                             </div>
+                              </div>
+                            </div>
                           </div>
+                        }
+                        <button (click)="addSlide()" class="w-full py-8 rounded-3xl border-2 border-dashed border-gray-200 text-gray-400 font-black uppercase tracking-[0.2em] text-[10px] hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"><i class="fas fa-plus-circle"></i> New Hero Frame</button>
+                      </div>
+                    </div>
+                  </div>
+                } @else if (activeTab() === 'About Us') {
+                  <div class="space-y-12">
+                    <div class="space-y-8">
+                      <div>
+                        <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] mb-8 border-l-4 border-brand-primary pl-4">Hero Configuration</h3>
+                        <div class="space-y-4">
+                          <input class="w-full bg-gray-50 p-4 rounded-xl font-black text-xl border outline-none uppercase italic" placeholder="Hero Title" [(ngModel)]="appData().content.about.heroTitle" />
+                          <textarea class="w-full bg-gray-50 p-4 rounded-xl text-sm border outline-none min-h-[100px]" placeholder="Hero Subtitle" [(ngModel)]="appData().content.about.heroSubtitle"></textarea>
+                        </div>
+                      </div>
+
+                      <div>
+                        <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] mb-8 border-l-4 border-brand-primary pl-4">The Promise Section</h3>
+                        <div class="space-y-4">
+                          <input class="w-full bg-gray-50 p-4 rounded-xl font-black uppercase tracking-widest text-xs border outline-none" placeholder="Title" [(ngModel)]="appData().content.about.title" />
+                          <input class="w-full bg-gray-50 p-4 rounded-xl text-sm border outline-none" placeholder="Subtitle" [(ngModel)]="appData().content.about.subtitle" />
+                          <textarea class="w-full bg-gray-50 p-4 rounded-xl text-sm border outline-none min-h-[150px]" placeholder="Main Content Text" [(ngModel)]="appData().content.about.content"></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                } @else if (activeTab() === 'Contact Info') {
+                  <div class="space-y-12">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div class="space-y-4">
+                        <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] mb-4 border-l-4 border-brand-primary pl-4">Core Channels</h3>
+                        <div class="space-y-4">
+                          <div class="relative">
+                             <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
+                             <input class="w-full bg-gray-50 pl-12 pr-4 py-4 rounded-xl text-sm font-bold border outline-none" placeholder="Primary Email" [(ngModel)]="appData().content.contact.email" />
+                          </div>
+                          <div class="relative">
+                             <i class="fas fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
+                             <input class="w-full bg-gray-50 pl-12 pr-4 py-4 rounded-xl text-sm font-bold border outline-none" placeholder="Primary Phone" [(ngModel)]="appData().content.contact.phone" />
+                          </div>
+                          <div class="relative">
+                             <i class="fas fa-phone-volume absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
+                             <input class="w-full bg-gray-50 pl-12 pr-4 py-4 rounded-xl text-sm font-bold border outline-none" placeholder="Secondary Phone" [(ngModel)]="appData().content.contact.phone2" />
+                          </div>
+                          <div class="relative">
+                             <i class="fab fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
+                             <input class="w-full bg-gray-50 pl-12 pr-4 py-4 rounded-xl text-sm font-bold border outline-none" placeholder="WhatsApp Trigger" [(ngModel)]="appData().content.contact.whatsapp" />
+                          </div>
+                          <div class="relative">
+                             <i class="fas fa-comment-dots absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
+                             <textarea class="w-full bg-gray-50 pl-12 pr-4 py-4 rounded-xl text-sm border outline-none min-h-[100px]" placeholder="Auto-Message (Professional)" [(ngModel)]="appData().content.contact.whatsappMessage"></textarea>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="space-y-4">
+                        <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] mb-4 border-l-4 border-brand-primary pl-4">Geography</h3>
+                        <textarea class="w-full bg-gray-50 p-4 rounded-xl text-sm border outline-none min-h-[140px]" placeholder="HQ Map Address" [(ngModel)]="appData().content.contact.address"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                } @else if (activeTab() === 'Categories') {
+                  <div class="space-y-8">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] border-l-4 border-brand-primary pl-4">Taxonomy Management</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      @for (cat of appData().categories; track cat.id; let idx = $index) {
+                        <div class="p-6 bg-gray-50 rounded-3xl border border-gray-100 flex flex-col gap-4 group hover:bg-white hover:shadow-xl transition-all">
+                          <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white rounded-xl border flex items-center justify-center text-brand-primary shadow-sm hover:scale-110 transition-transform">
+                              <i [class]="'fas fa-' + cat.icon"></i>
+                            </div>
+                            <input class="flex-grow bg-transparent font-black text-brand-darkest uppercase italic tracking-tighter text-sm outline-none border-b border-transparent focus:border-brand-primary transition-colors" [(ngModel)]="cat.name" placeholder="Category Name" />
+                            <button (click)="removeListItem('categories', idx)" class="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center"><i class="fas fa-trash-alt text-xs"></i></button>
+                          </div>
+
+                          <!-- Image Block -->
+                          <div class="flex gap-4 items-center pl-16">
+                            <div class="w-20 h-20 bg-white border border-gray-100 rounded-2xl overflow-hidden flex-shrink-0 shadow-inner p-2 flex items-center justify-center">
+                              @if (cat.image) {
+                                <img [src]="cat.image" class="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500" />
+                              } @else {
+                                <i class="fas fa-image text-gray-200 text-2xl"></i>
+                              }
+                            </div>
+                            <div class="flex-grow space-y-2">
+                              <input type="file" [id]="'cat-img-' + idx" class="hidden" (change)="onFileSelected($event, 'category', idx)" />
+                              <label [for]="'cat-img-' + idx" class="w-full block bg-white p-3 rounded-xl text-[9px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all text-gray-500 flex items-center justify-center gap-2">
+                                <i class="fas fa-folder-open text-xs"></i> Upload File
+                              </label>
+                              <div class="flex items-center gap-2">
+                                <i class="fas fa-link text-gray-300 text-xs"></i>
+                                <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[11px] border border-gray-100 outline-none" placeholder="Or paste URL..." (change)="onUrlInput($any($event.target).value, 'category', idx)" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                    <button (click)="addCategory()" class="w-full py-6 rounded-3xl border-2 border-dashed border-gray-200 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:border-brand-primary hover:text-brand-primary transition-all">Append Classification</button>
+                  </div>
+                } @else if (activeTab() === 'Blog Posts') {
+                  <div class="space-y-8">
+                    <div class="flex items-center justify-between">
+                      <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] border-l-4 border-brand-primary pl-4">Intelligence Archive</h3>
+                    </div>
+                    <div class="space-y-4">
+                      @for (post of appData().blogs; track post.id; let idx = $index) {
+                        <div class="p-6 bg-gray-50 rounded-3xl border border-gray-100 flex items-center justify-between group hover:bg-white hover:shadow-xl transition-all">
+                          <div class="flex items-center gap-6">
+                            <div class="w-16 h-10 bg-gray-200 rounded-lg overflow-hidden">
+                               <img [src]="post.image" class="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                              <input class="bg-transparent font-black text-brand-darkest uppercase italic tracking-tighter text-sm outline-none border-b border-transparent focus:border-brand-primary" [(ngModel)]="post.title" />
+                              <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">{{ post.author }} • {{ post.date }}</p>
+                            </div>
+                          </div>
+                          <div class="flex gap-3">
+                             <button (click)="editingBlog.set(post)" class="w-10 h-10 rounded-xl bg-white border border-gray-100 text-brand-primary hover:bg-brand-primary hover:text-white transition-all shadow-sm flex items-center justify-center">
+                               <i class="fas fa-pen-nib text-xs"></i>
+                             </button>
+                             <button (click)="removeListItem('blogs', idx)" class="w-10 h-10 rounded-xl hover:bg-red-50 text-gray-300 hover:text-red-500 transition-all flex items-center justify-center"><i class="fas fa-trash-alt text-xs"></i></button>
+                          </div>
+                        </div>
+                      }
+                      <button (click)="addBlogPost()" class="w-full py-8 rounded-3xl border-2 border-dashed border-gray-200 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-3"><i class="fas fa-plus-circle"></i> New Intelligence Brief</button>
+                    </div>
+                  </div>
+                } @else if (activeTab() === 'Products') {
+                  <div class="flex items-center justify-between mb-8">
+                    <div>
+                      <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] mb-2 border-l-4 border-brand-primary pl-4">Inventory Control</h3>
+                      <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Manage high-security vault specifications</p>
+                    </div>
+                    <button
+                      (click)="addNewRecord()"
+                      class="bg-brand-primary text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-brand-dark transition-all flex items-center gap-2"
+                    >
+                      <i class="fas fa-plus"></i> New Safe
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-1 gap-4">
+                    @for (p of products(); track p.id) {
+                      <div class="flex items-center justify-between p-8 bg-gray-50 rounded-[32px] border border-gray-100 hover:bg-white transition-all group shadow-sm hover:shadow-2xl hover:scale-[1.01] relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-brand-primary opacity-0 group-hover:opacity-100 transition-all"></div>
+                        <div class="flex items-center gap-8">
+                          <div class="w-20 h-20 bg-white rounded-2xl overflow-hidden border border-gray-100 p-3 flex items-center justify-center shadow-inner">
+                            <img [src]="p.image || 'https://via.placeholder.com/150'" class="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500" />
+                          </div>
+                          <div>
+                            <div class="flex items-center gap-3 mb-1">
+                              <h4 class="font-black text-brand-darkest text-base uppercase italic tracking-tighter">{{ p.name }}</h4>
+                              <span class="px-2 py-0.5 bg-brand-primary/10 text-brand-primary text-[8px] font-black uppercase tracking-widest rounded-md">{{ p.weight || 'No Weight' }}</span>
+                            </div>
+                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                              <i class="fas fa-layer-group text-brand-primary/40"></i> {{ p.category }}
+                            </span>
+                          </div>
+                        </div>
+                        <div class="flex gap-3">
+                           <button (click)="editingProduct.set(p)" class="w-12 h-12 rounded-[18px] bg-white border border-gray-100 text-brand-primary hover:bg-brand-primary hover:text-white transition-all shadow-sm flex items-center justify-center">
+                             <i class="fas fa-pen-nib text-xs"></i>
+                           </button>
+                           <button (click)="removeProduct(p.id)" class="w-12 h-12 rounded-[18px] bg-white border border-gray-100 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm flex items-center justify-center">
+                             <i class="fas fa-trash-can text-xs"></i>
+                           </button>
                         </div>
                       </div>
                     }
-                    <button (click)="addSlide()" class="w-full py-8 rounded-3xl border-2 border-dashed border-gray-200 text-gray-400 font-black uppercase tracking-[0.2em] text-[10px] hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"><i class="fas fa-plus-circle"></i> New Hero Frame</button>
-                  </div>
-                </div>
-              </div>
-            }
-
-            @if (activeTab() === 'About Us') {
-              <div class="space-y-12">
-                <div class="space-y-8">
-                  <div>
-                    <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] mb-8 border-l-4 border-brand-primary pl-4">Hero Configuration</h3>
-                    <div class="space-y-4">
-                      <input class="w-full bg-gray-50 p-4 rounded-xl font-black text-xl border outline-none uppercase italic" placeholder="Hero Title" [(ngModel)]="appData().content.about.heroTitle" />
-                      <textarea class="w-full bg-gray-50 p-4 rounded-xl text-sm border outline-none min-h-[100px]" placeholder="Hero Subtitle" [(ngModel)]="appData().content.about.heroSubtitle"></textarea>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] mb-8 border-l-4 border-brand-primary pl-4">The Promise Section</h3>
-                    <div class="space-y-4">
-                      <input class="w-full bg-gray-50 p-4 rounded-xl font-black uppercase tracking-widest text-xs border outline-none" placeholder="Title" [(ngModel)]="appData().content.about.title" />
-                      <input class="w-full bg-gray-50 p-4 rounded-xl text-sm border outline-none" placeholder="Subtitle" [(ngModel)]="appData().content.about.subtitle" />
-                      <textarea class="w-full bg-gray-50 p-4 rounded-xl text-sm border outline-none min-h-[150px]" placeholder="Main Content Text" [(ngModel)]="appData().content.about.content"></textarea>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            }
-
-            @if (activeTab() === 'Contact Info') {
-              <div class="space-y-12">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div class="space-y-4">
-                    <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] mb-4 border-l-4 border-brand-primary pl-4">Core Channels</h3>
-                    <div class="space-y-4">
-                      <div class="relative">
-                         <i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
-                         <input class="w-full bg-gray-50 pl-12 pr-4 py-4 rounded-xl text-sm font-bold border outline-none" placeholder="Primary Email" [(ngModel)]="appData().content.contact.email" />
-                      </div>
-                      <div class="relative">
-                         <i class="fas fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
-                         <input class="w-full bg-gray-50 pl-12 pr-4 py-4 rounded-xl text-sm font-bold border outline-none" placeholder="Primary Phone" [(ngModel)]="appData().content.contact.phone" />
-                      </div>
-                      <div class="relative">
-                         <i class="fas fa-phone-volume absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
-                         <input class="w-full bg-gray-50 pl-12 pr-4 py-4 rounded-xl text-sm font-bold border outline-none" placeholder="Secondary Phone" [(ngModel)]="appData().content.contact.phone2" />
-                      </div>
-                      <div class="relative">
-                         <i class="fab fa-whatsapp absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
-                         <input class="w-full bg-gray-50 pl-12 pr-4 py-4 rounded-xl text-sm font-bold border outline-none" placeholder="WhatsApp Trigger" [(ngModel)]="appData().content.contact.whatsapp" />
-                      </div>
-                      <div class="relative">
-                         <i class="fas fa-comment-dots absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"></i>
-                         <textarea class="w-full bg-gray-50 pl-12 pr-4 py-4 rounded-xl text-sm border outline-none min-h-[100px]" placeholder="Auto-Message (Professional)" [(ngModel)]="appData().content.contact.whatsappMessage"></textarea>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="space-y-4">
-                    <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] mb-4 border-l-4 border-brand-primary pl-4">Geography</h3>
-                    <textarea class="w-full bg-gray-50 p-4 rounded-xl text-sm border outline-none min-h-[140px]" placeholder="HQ Map Address" [(ngModel)]="appData().content.contact.address"></textarea>
-                  </div>
-                </div>
-              </div>
-            }
-
-            @if (activeTab() === 'Categories') {
-              <div class="space-y-8">
-                <div class="flex items-center justify-between">
-                  <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] border-l-4 border-brand-primary pl-4">Taxonomy Management</h3>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  @for (cat of appData().categories; track cat.id; let idx = $index) {
-                    <div class="p-6 bg-gray-50 rounded-3xl border border-gray-100 flex flex-col gap-4 group hover:bg-white hover:shadow-xl transition-all">
-                      <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-white rounded-xl border flex items-center justify-center text-brand-primary shadow-sm hover:scale-110 transition-transform">
-                          <i [class]="'fas fa-' + cat.icon"></i>
-                        </div>
-                        <input class="flex-grow bg-transparent font-black text-brand-darkest uppercase italic tracking-tighter text-sm outline-none border-b border-transparent focus:border-brand-primary transition-colors" [(ngModel)]="cat.name" placeholder="Category Name" />
-                        <button (click)="removeListItem('categories', idx)" class="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center"><i class="fas fa-trash-alt text-xs"></i></button>
-                      </div>
-
-                      <!-- Image Block -->
-                      <div class="flex gap-4 items-center pl-16">
-                        <div class="w-20 h-20 bg-white border border-gray-100 rounded-2xl overflow-hidden flex-shrink-0 shadow-inner p-2 flex items-center justify-center">
-                          @if (cat.image) {
-                            <img [src]="cat.image" class="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500" />
-                          } @else {
-                            <i class="fas fa-image text-gray-200 text-2xl"></i>
-                          }
-                        </div>
-                        <div class="flex-grow space-y-2">
-                          <input type="file" [id]="'cat-img-' + idx" class="hidden" (change)="onFileSelected($event, 'category', idx)" />
-                          <label [for]="'cat-img-' + idx" class="w-full block bg-white p-3 rounded-xl text-[9px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all text-gray-500 flex items-center justify-center gap-2">
-                            <i class="fas fa-folder-open text-xs"></i> Upload File
-                          </label>
-                          <div class="flex items-center gap-2">
-                            <i class="fas fa-link text-gray-300 text-xs"></i>
-                            <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[11px] border border-gray-100 outline-none" placeholder="Or paste URL..." (change)="onUrlInput($any($event.target).value, 'category', idx)" />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  }
-                </div>
-                <button (click)="addCategory()" class="w-full py-6 rounded-3xl border-2 border-dashed border-gray-200 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:border-brand-primary hover:text-brand-primary transition-all">Append Classification</button>
-              </div>
-            }
-
-            @if (activeTab() === 'Blog Posts') {
-              <div class="space-y-8">
-                <div class="flex items-center justify-between">
-                  <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] border-l-4 border-brand-primary pl-4">Intelligence Archive</h3>
-                </div>
-                <div class="space-y-4">
-                  @for (post of appData().blogs; track post.id; let idx = $index) {
-                    <div class="p-6 bg-gray-50 rounded-3xl border border-gray-100 flex items-center justify-between group hover:bg-white hover:shadow-xl transition-all">
-                      <div class="flex items-center gap-6">
-                        <div class="w-16 h-10 bg-gray-200 rounded-lg overflow-hidden">
-                           <img [src]="post.image" class="w-full h-full object-cover" />
-                        </div>
-                        <div>
-                          <input class="bg-transparent font-black text-brand-darkest uppercase italic tracking-tighter text-sm outline-none border-b border-transparent focus:border-brand-primary" [(ngModel)]="post.title" />
-                          <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">{{ post.author }} • {{ post.date }}</p>
-                        </div>
-                      </div>
-                      <div class="flex gap-3">
-                         <button (click)="editingBlog.set(post)" class="w-10 h-10 rounded-xl bg-white border border-gray-100 text-brand-primary hover:bg-brand-primary hover:text-white transition-all shadow-sm flex items-center justify-center">
-                           <i class="fas fa-pen-nib text-xs"></i>
-                         </button>
-                         <button (click)="removeListItem('blogs', idx)" class="w-10 h-10 rounded-xl hover:bg-red-50 text-gray-300 hover:text-red-500 transition-all flex items-center justify-center"><i class="fas fa-trash-alt text-xs"></i></button>
-                      </div>
-                    </div>
-                  }
-                  <button (click)="addBlogPost()" class="w-full py-8 rounded-3xl border-2 border-dashed border-gray-200 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-3"><i class="fas fa-plus-circle"></i> New Intelligence Brief</button>
-                </div>
-              </div>
-            }
-
-            @if (activeTab() === 'Products') {
-              <div class="flex items-center justify-between mb-8">
-                <div>
-                  <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] mb-2 border-l-4 border-brand-primary pl-4">Inventory Control</h3>
-                  <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Manage high-security vault specifications</p>
-                </div>
-                <button 
-                  (click)="addNewRecord()"
-                  class="bg-brand-primary text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl hover:bg-brand-dark transition-all flex items-center gap-2"
-                >
-                  <i class="fas fa-plus"></i> New Safe
-                </button>
-              </div>
-
-              <div class="grid grid-cols-1 gap-4">
-                @for (p of products(); track p.id) {
-                  <div class="flex items-center justify-between p-8 bg-gray-50 rounded-[32px] border border-gray-100 hover:bg-white transition-all group shadow-sm hover:shadow-2xl hover:scale-[1.01] relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-brand-primary opacity-0 group-hover:opacity-100 transition-all"></div>
-                    <div class="flex items-center gap-8">
-                      <div class="w-20 h-20 bg-white rounded-2xl overflow-hidden border border-gray-100 p-3 flex items-center justify-center shadow-inner">
-                        <img [src]="p.image || 'https://via.placeholder.com/150'" class="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500" />
-                      </div>
-                      <div>
-                        <div class="flex items-center gap-3 mb-1">
-                          <h4 class="font-black text-brand-darkest text-base uppercase italic tracking-tighter">{{ p.name }}</h4>
-                          <span class="px-2 py-0.5 bg-brand-primary/10 text-brand-primary text-[8px] font-black uppercase tracking-widest rounded-md">{{ p.weight || 'No Weight' }}</span>
-                        </div>
-                        <span class="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                          <i class="fas fa-layer-group text-brand-primary/40"></i> {{ p.category }}
-                        </span>
-                      </div>
-                    </div>
-                    <div class="flex gap-3">
-                       <button (click)="editingProduct.set(p)" class="w-12 h-12 rounded-[18px] bg-white border border-gray-100 text-brand-primary hover:bg-brand-primary hover:text-white transition-all shadow-sm flex items-center justify-center">
-                         <i class="fas fa-pen-nib text-xs"></i>
-                       </button>
-                       <button (click)="removeProduct(p.id)" class="w-12 h-12 rounded-[18px] bg-white border border-gray-100 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-sm flex items-center justify-center">
-                         <i class="fas fa-trash-can text-xs"></i>
-                       </button>
-                    </div>
                   </div>
                 }
-              </div>
-            }
-            </div>
-            }
-          </div>
+              </div> <!-- Close glass container -->
+            } <!-- Close @else -->
+          </div> <!-- Close max-w-5xl -->
         </main>
 
       <!-- Edit Modal - Unified approach for brevity -->
@@ -623,7 +691,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
   styles: []
 })
 export class AdminPanelComponent implements OnInit {
-  tabs: AdminPage[] = ['Home Page', 'About Us', 'Contact Info', 'Products', 'Categories', 'Blog Posts'];
+  tabs: AdminPage[] = ['Home Page', 'About Us', 'Contact Info', 'Products', 'Categories', 'Blog Posts', 'Inquiries'];
   activeTab = signal<AdminPage>('Home Page');
 
   // Security & Authentication
@@ -644,6 +712,9 @@ export class AdminPanelComponent implements OnInit {
   editingBlog = signal<BlogPost | null>(null);
 
   isSidebarOpen = signal(false); // Mobile sidebar state
+
+  inquiries = signal<any[]>([]);
+  isLoadingInquiries = signal(false);
 
   @HostListener('window:keydown.escape', ['$event'])
   handleEscape(event: any) {
@@ -668,6 +739,51 @@ export class AdminPanelComponent implements OnInit {
     if (currentData) {
       this.appData.set(JSON.parse(JSON.stringify(currentData)));
     }
+    this.fetchInquiries();
+  }
+
+  fetchInquiries() {
+    this.isLoadingInquiries.set(true);
+    this.apiService.getInquiries().subscribe({
+      next: (data) => {
+        this.inquiries.set(data);
+        this.isLoadingInquiries.set(false);
+      },
+      error: (err) => {
+        console.error('Error fetching inquiries', err);
+        this.isLoadingInquiries.set(false);
+      }
+    });
+  }
+
+  exportInquiriesToExcel() {
+    const data = this.inquiries();
+    if (data.length === 0) return;
+
+    // Create CSV content
+    const headers = ['Name', 'Email', 'Phone', 'Subject', 'Message', 'Date'];
+    const rows = data.map(i => [
+      `"${i.name}"`,
+      `"${i.email}"`,
+      `"${i.phone || ''}"`,
+      `"${i.subject || ''}"`,
+      `"${i.message.replace(/"/g, '""')}"`,
+      new Date(i.createdAt).toLocaleString()
+    ]);
+
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Inquiries_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  alert(msg: string) {
+    window.alert(msg);
   }
 
   handleLogin() {
@@ -707,6 +823,8 @@ export class AdminPanelComponent implements OnInit {
       case 'Products': return 'vault';
       case 'Categories': return 'layer-group';
       case 'Blog Posts': return 'pen-fancy';
+      case 'Inquiries': return 'inbox';
+      default: return 'circle';
     }
   }
 

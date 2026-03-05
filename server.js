@@ -7,6 +7,12 @@ import nodemailer from 'nodemailer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import dns from 'dns';
+
+// Force IPv4 for SMTP compatibility on networks with broken IPv6
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+}
 import multer from 'multer';
 
 const app = express();
@@ -195,16 +201,28 @@ app.post('/api/deploy', async (req, res) => {
     }
 });
 
+app.get('/api/inquiries', async (req, res) => {
+    try {
+        const inquiries = await ContactMessage.find().sort({ createdAt: -1 });
+        res.json(inquiries);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Nodemailer
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT) || 465,
-    secure: (parseInt(process.env.SMTP_PORT) || 465) === 465,
+    port: 465,
+    secure: true,
     auth: {
         user: 'safesmart.in@gmail.com',
         pass: 'yths xpzv deoi yhni'
     },
-    tls: { rejectUnauthorized: false },
+    tls: {
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2'
+    },
     connectionTimeout: 10000,
     family: 4
 });
@@ -227,48 +245,52 @@ app.post('/api/contact', async (req, res) => {
         res.status(201).json({ message: 'Inquiry received' });
 
         const adminMailOptions = {
-            from: '"Safe Smart Contact" <safesmart.in@gmail.com>',
+            from: '"SafeSmart System" <safesmart.in@gmail.com>',
             to: 'safesmart.in@gmail.com',
-            subject: subject ? `[SECURITY INQUIRY] ${subject}` : `New Inquiry from ${name}`,
+            subject: subject ? `[NEW INQUIRY] ${subject}` : `New Lead: ${name}`,
             html: `
-            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 24px; overflow: hidden; background-color: #ffffff; box-shadow: 0 20px 50px rgba(0,0,0,0.1);">
-                <div style="background-color: #030405; padding: 50px 40px; text-align: center; border-bottom: 4px solid #61FF00;">
-                    <div style="color: #61FF00; font-size: 11px; font-weight: 950; text-transform: uppercase; letter-spacing: 0.5em; margin-bottom: 12px;">Security Protocol Activated</div>
-                    <h1 style="color: #ffffff; margin: 0; font-style: italic; font-weight: 900; text-transform: uppercase; font-size: 28px; letter-spacing: -0.02em;">New System Inquiry</h1>
+            <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc;">
+                <div style="background-color: #011f4b; padding: 40px 20px; text-align: center;">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">New Security Inquiry</h1>
+                    <p style="color: #60a5fa; margin: 10px 0 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em;">SafeSmart Management Engine</p>
                 </div>
                 
-                <div style="padding: 40px; background-color: #ffffff;">
-                    <div style="margin-bottom: 35px; border-left: 4px solid #61FF00; padding-left: 20px;">
-                        <span style="font-size: 10px; font-weight: 900; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.15em; display: block; margin-bottom: 6px;">Lead Identification</span>
-                        <div style="font-size: 22px; font-weight: 900; color: #030405; font-style: italic;">${name}</div>
+                <div style="padding: 40px; background-color: #ffffff; border: 1px solid #e2e8f0; border-top: none;">
+                    <div style="margin-bottom: 30px;">
+                        <span style="font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 8px;">Contact Details</span>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #f1f5f9; background-color: #f8fafc; font-size: 13px; font-weight: 700; width: 30%;">Name</td>
+                                <td style="padding: 12px; border: 1px solid #f1f5f9; font-size: 13px; color: #1e293b;">${name}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #f1f5f9; background-color: #f8fafc; font-size: 13px; font-weight: 700;">Email</td>
+                                <td style="padding: 12px; border: 1px solid #f1f5f9; font-size: 13px;"><a href="mailto:${email}" style="color: #005b96; text-decoration: none;">${email}</a></td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 12px; border: 1px solid #f1f5f9; background-color: #f8fafc; font-size: 13px; font-weight: 700;">Phone</td>
+                                <td style="padding: 12px; border: 1px solid #f1f5f9; font-size: 13px; color: #1e293b;">${phone || 'N/A'}</td>
+                            </tr>
+                        </table>
                     </div>
 
-                    <div style="display: grid; gap: 20px; margin-bottom: 35px;">
-                        <div style="background-color: #f9fafb; padding: 25px; border-radius: 20px; border: 1px solid #f3f4f6; display: block;">
-                            <span style="font-size: 9px; font-weight: 900; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 8px;">Digital Credentials</span>
-                            <a href="mailto:${email}" style="color: #030405; font-weight: 700; text-decoration: none; font-size: 15px;">${email}</a>
-                        </div>
-                        <div style="background-color: #f9fafb; padding: 25px; border-radius: 20px; border: 1px solid #f3f4f6; display: block;">
-                            <span style="font-size: 9px; font-weight: 900; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 8px;">Direct Communication</span>
-                            <a href="tel:${phone ? phone.replace(/\s+/g, '') : ''}" style="display: inline-flex; align-items: center; background-color: #61FF00; color: #030405; padding: 10px 20px; border-radius: 12px; font-weight: 900; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">
-                                <span style="margin-right: 8px;">📞</span> ${phone || 'N/A'}
-                            </a>
+                    <div style="margin-bottom: 30px;">
+                        <span style="font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 8px;">Inquiry Subject</span>
+                        <div style="padding: 15px; background-color: #011f4b; color: #ffffff; border-radius: 8px; font-size: 14px; font-weight: 700;">
+                            ${subject || 'General Information'}
                         </div>
                     </div>
 
-                    <div style="background-color: #030405; padding: 35px; border-radius: 24px; color: #ffffff; margin-bottom: 10px;">
-                        <span style="font-size: 9px; font-weight: 900; color: #61FF00; text-transform: uppercase; letter-spacing: 0.2em; display: block; margin-bottom: 12px;">Strategic Subject</span>
-                        <div style="font-weight: 900; margin-bottom: 20px; font-size: 18px; font-style: italic;">${subject || 'General Security Inquiry'}</div>
-                        
-                        <div style="height: 1px; background-color: rgba(255,255,255,0.1); margin-bottom: 20px;"></div>
-
-                        <span style="font-size: 9px; font-weight: 900; color: #61FF00; text-transform: uppercase; letter-spacing: 0.2em; display: block; margin-bottom: 12px;">Message Content</span>
-                        <div style="font-size: 15px; color: #d1d5db; line-height: 1.7; font-weight: 500;">${message}</div>
+                    <div>
+                        <span style="font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 8px;">Message</span>
+                        <div style="padding: 20px; background-color: #f1f5f9; border-radius: 8px; font-size: 14px; color: #334155; line-height: 1.6; border-left: 4px solid #005b96;">
+                            ${message}
+                        </div>
                     </div>
                 </div>
 
-                <div style="background-color: #f9fafb; padding: 30px; text-align: center; color: #9ca3af; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3em; border-top: 1px solid #f3f4f6;">
-                    SafeSmart Security Systems • Internal Intelligence
+                <div style="padding: 30px; text-align: center; color: #94a3b8; font-size: 11px; font-weight: 500;">
+                    &copy; ${new Date().getFullYear()} SafeSmart Security Systems. All rights reserved.
                 </div>
             </div>
             `
@@ -277,38 +299,34 @@ app.post('/api/contact', async (req, res) => {
         const clientMailOptions = {
             from: '"SafeSmart Security" <safesmart.in@gmail.com>',
             to: email,
-            subject: `Thank You for Contacting SafeSmart Security`,
+            subject: `We've Received Your Inquiry - SafeSmart Security`,
             html: `
-            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 24px; overflow: hidden; background-color: #ffffff; box-shadow: 0 20px 50px rgba(0,0,0,0.1);">
-                <div style="background-color: #030405; padding: 50px 40px; text-align: center; border-bottom: 4px solid #61FF00;">
-                    <div style="color: #61FF00; font-size: 11px; font-weight: 950; text-transform: uppercase; letter-spacing: 0.5em; margin-bottom: 12px;">Transmission Received</div>
-                    <h1 style="color: #ffffff; margin: 0; font-style: italic; font-weight: 900; text-transform: uppercase; font-size: 28px; letter-spacing: -0.02em;">We Hear You Loud & Clear</h1>
+            <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc;">
+                <div style="background-color: #011f4b; padding: 50px 20px; text-align: center;">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;">Thank You, ${name}</h1>
+                    <p style="color: #60a5fa; margin: 10px 0 0; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.2em;">Inquiry Successfully Transmitted</p>
                 </div>
                 
-                <div style="padding: 40px; background-color: #ffffff; text-align: center;">
-                    <div style="font-size: 20px; font-weight: 800; color: #030405; margin-bottom: 20px;">Hello ${name},</div>
-                    <p style="font-size: 16px; color: #4b5563; line-height: 1.8; margin-bottom: 30px; font-weight: 500;">
-                        Thank you for reaching out to **SafeSmart Security Systems**. Your inquiry regarding <span style="color: #030405; font-weight: 800;">"${subject || 'our security products'}"</span> has been securely received by our engineering team.
+                <div style="padding: 40px; background-color: #ffffff; border: 1px solid #e2e8f0; border-top: none; text-align: center;">
+                    <p style="font-size: 15px; color: #334155; line-height: 1.6; margin-bottom: 25px;">
+                        Hello <strong>${name}</strong>,<br><br>
+                        Thank you for reaching out to <strong>SafeSmart Security</strong>. We have received your inquiry regarding "<em>${subject || 'our security solutions'}</em>" and our team is already reviewing your requirements.
                     </p>
 
-                    <div style="background-color: #f9fafb; padding: 30px; border-radius: 24px; border: 1px solid #f3f4f6; margin-bottom: 35px;">
-                        <h4 style="margin: 0 0 15px 0; color: #030405; text-transform: uppercase; font-size: 12px; letter-spacing: 0.1em; font-weight: 900;">Next Security Steps</h4>
-                        <p style="font-size: 14px; color: #6b7280; margin: 0; line-height: 1.6;">
-                            Our security experts are currently analyzing your requirements. You can expect a professional response via your encrypted email or provided voice line (${phone || email}) within the next <span style="color: #030405; font-weight: 800;">24 business hours</span>.
+                    <div style="background-color: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #f1f5f9; margin-bottom: 30px; text-align: left;">
+                        <h4 style="margin: 0 0 10px 0; font-size: 12px; font-weight: 800; color: #011f4b; text-transform: uppercase; letter-spacing: 0.05em;">What's Next?</h4>
+                        <p style="margin: 0; font-size: 13px; color: #64748b; line-height: 1.5;">
+                            One of our security consultants will contact you within <strong>24 business hours</strong> to provide more information.
                         </p>
                     </div>
 
-                    <a href="https://safesmart.in" style="display: inline-block; background-color: #030405; color: #61FF00; padding: 18px 40px; border-radius: 15px; font-weight: 900; text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 0.2em; transition: all 0.3s ease;">
-                        Explore Our Full Range
-                    </a>
+                    <p style="font-size: 13px; color: #94a3b8;">
+                        If you need immediate assistance, feel free to call us at <a href="tel:+919909915595" style="color: #005b96; text-decoration: none; font-weight: 700;">+91 99099 15595</a>.
+                    </p>
                 </div>
 
-                <div style="background-color: #030405; padding: 40px; text-align: center; color: #ffffff;">
-                    <div style="font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.4em; color: #61FF00; margin-bottom: 15px;">SafeSmart Security</div>
-                    <p style="font-size: 12px; color: #9ca3af; margin: 0; font-weight: 500;">16 - Yogi Nagar, Opp. Railway Track,<br>Gondal - 360 311, Gujarat (India)</p>
-                    <div style="margin-top: 20px; font-size: 14px; font-weight: 800;">
-                        <span style="color: #61FF00;">•</span> Professional <span style="color: #61FF00;">•</span> Certified <span style="color: #61FF00;">•</span> Secure
-                    </div>
+                <div style="padding: 30px; text-align: center; color: #94a3b8; font-size: 11px; font-weight: 500;">
+                    SafeSmart Security Systems • 16 Yogi Nagar, Gondal, Gujarat
                 </div>
             </div>
             `
