@@ -116,4 +116,16 @@ export class ApiService {
       return false;
     }
   }
+
+  async uploadImage(file: File): Promise<string | null> {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const result = await firstValueFrom(this.http.post<{ url: string }>(`${this.BASE_URL.replace('/api', '')}/api/upload-image`, formData));
+      return result.url;
+    } catch (err) {
+      console.error('Image upload failed', err);
+      return null;
+    }
+  }
 }

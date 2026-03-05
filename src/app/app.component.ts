@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DataService } from './services/data.service';
 import { ApiService } from './services/api.service';
@@ -30,7 +30,8 @@ export class AppComponent implements OnInit {
 
   constructor(
     private dataService: DataService,
-    private apiService: ApiService
+    private apiService: ApiService,
+    public router: Router
   ) { }
 
   ngOnInit() {

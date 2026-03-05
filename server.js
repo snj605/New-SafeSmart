@@ -7,6 +7,7 @@ import nodemailer from 'nodemailer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import multer from 'multer';
 
 const app = express();
 app.use(cors());
@@ -19,6 +20,19 @@ const __dirname = path.dirname(__filename);
 // Serve static files exclusively from the root of the 'dist' directory as expected by Hostinger and local setups
 const distPath = path.join(__dirname, 'dist');
 console.log('📂 Serving static files strictly from:', distPath);
+
+// Multer Storage: saves uploaded images to dist/assets/uploads
+const uploadDir = path.join(distPath, 'assets', 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+const multerStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        cb(null, `img_${Date.now()}${ext}`);
+    }
+});
+const upload = multer({ storage: multerStorage, limits: { fileSize: 10 * 1024 * 1024 } });
 
 app.use(express.static(distPath));
 
@@ -123,6 +137,14 @@ app.get('/api/health', (req, res) => {
             port: process.env.PORT
         }
     });
+});
+
+// Image Upload Route
+app.post('/api/upload-image', upload.single('image'), (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'No image file provided.' });
+    const publicUrl = `/assets/uploads/${req.file.filename}`;
+    console.log('✅ Image uploaded:', publicUrl);
+    res.json({ url: publicUrl });
 });
 
 // API Routes

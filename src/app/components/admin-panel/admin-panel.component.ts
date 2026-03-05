@@ -167,16 +167,20 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                                 <div class="w-20 h-20 bg-white border rounded-xl flex-shrink-0 overflow-hidden">
                                   @if (slide.image) { <img [src]="slide.image" class="w-full h-full object-cover" /> }
                                 </div>
-                                <div class="flex-grow">
-                                  <label class="text-[9px] font-black uppercase tracking-widest mb-1 block opacity-50">Background Image</label>
-                                  <input 
-                                    type="file" 
-                                    [id]="'home-slide-' + idx" 
-                                    class="hidden" 
-                                    (change)="onFileSelected($event, 'slide', idx)"
-                                  />
-                                  <label [htmlFor]="'home-slide-' + idx" class="w-full block bg-white p-4 rounded-xl text-[10px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all">Upload Asset</label>
-                                </div>
+                                 <div class="flex-grow space-y-2">
+                                   <label class="text-[9px] font-black uppercase tracking-widest mb-1 block opacity-50">Background Image</label>
+                                   <input
+                                     type="file"
+                                     [id]="'home-slide-' + idx"
+                                     class="hidden"
+                                     (change)="onFileSelected($event, 'slide', idx)"
+                                   />
+                                   <label [for]="'home-slide-' + idx" class="w-full block bg-white p-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"><i class="fas fa-folder-open text-xs"></i>Upload File</label>
+                                   <div class="flex items-center gap-2">
+                                     <i class="fas fa-link text-gray-300 text-xs"></i>
+                                     <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[11px] border border-gray-100 outline-none" placeholder="Or paste image URL..." (change)="onUrlInput($any($event.target).value, 'slide', idx)" />
+                                   </div>
+                                 </div>
                              </div>
                           </div>
                         </div>
@@ -255,12 +259,35 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   @for (cat of appData().categories; track cat.id; let idx = $index) {
-                    <div class="p-6 bg-gray-50 rounded-3xl border border-gray-100 flex items-center gap-4 group">
-                      <div class="w-12 h-12 bg-white rounded-xl border flex items-center justify-center text-brand-primary">
-                        <i [class]="'fas fa-' + cat.icon"></i>
+                    <div class="p-6 bg-gray-50 rounded-3xl border border-gray-100 flex flex-col gap-4 group hover:bg-white hover:shadow-xl transition-all">
+                      <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white rounded-xl border flex items-center justify-center text-brand-primary shadow-sm hover:scale-110 transition-transform">
+                          <i [class]="'fas fa-' + cat.icon"></i>
+                        </div>
+                        <input class="flex-grow bg-transparent font-black text-brand-darkest uppercase italic tracking-tighter text-sm outline-none border-b border-transparent focus:border-brand-primary transition-colors" [(ngModel)]="cat.name" placeholder="Category Name" />
+                        <button (click)="removeListItem('categories', idx)" class="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center"><i class="fas fa-trash-alt text-xs"></i></button>
                       </div>
-                      <input class="flex-grow bg-transparent font-black uppercase tracking-widest text-[10px] outline-none" [(ngModel)]="cat.name" />
-                      <button (click)="removeListItem('categories', idx)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 transition-all"><i class="fas fa-times-circle"></i></button>
+
+                      <!-- Image Block -->
+                      <div class="flex gap-4 items-center pl-16">
+                        <div class="w-20 h-20 bg-white border border-gray-100 rounded-2xl overflow-hidden flex-shrink-0 shadow-inner p-2 flex items-center justify-center">
+                          @if (cat.image) {
+                            <img [src]="cat.image" class="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-500" />
+                          } @else {
+                            <i class="fas fa-image text-gray-200 text-2xl"></i>
+                          }
+                        </div>
+                        <div class="flex-grow space-y-2">
+                          <input type="file" [id]="'cat-img-' + idx" class="hidden" (change)="onFileSelected($event, 'category', idx)" />
+                          <label [for]="'cat-img-' + idx" class="w-full block bg-white p-3 rounded-xl text-[9px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all text-gray-500 flex items-center justify-center gap-2">
+                            <i class="fas fa-folder-open text-xs"></i> Upload File
+                          </label>
+                          <div class="flex items-center gap-2">
+                            <i class="fas fa-link text-gray-300 text-xs"></i>
+                            <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[11px] border border-gray-100 outline-none" placeholder="Or paste URL..." (change)="onUrlInput($any($event.target).value, 'category', idx)" />
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   }
                 </div>
@@ -285,7 +312,12 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                           <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">{{ post.author }} • {{ post.date }}</p>
                         </div>
                       </div>
-                      <button (click)="removeListItem('blogs', idx)" class="w-10 h-10 rounded-xl hover:bg-red-50 text-gray-300 hover:text-red-500 transition-all flex items-center justify-center"><i class="fas fa-trash-alt text-xs"></i></button>
+                      <div class="flex gap-3">
+                         <button (click)="editingBlog.set(post)" class="w-10 h-10 rounded-xl bg-white border border-gray-100 text-brand-primary hover:bg-brand-primary hover:text-white transition-all shadow-sm flex items-center justify-center">
+                           <i class="fas fa-pen-nib text-xs"></i>
+                         </button>
+                         <button (click)="removeListItem('blogs', idx)" class="w-10 h-10 rounded-xl hover:bg-red-50 text-gray-300 hover:text-red-500 transition-all flex items-center justify-center"><i class="fas fa-trash-alt text-xs"></i></button>
+                      </div>
                     </div>
                   }
                   <button (click)="addBlogPost()" class="w-full py-8 rounded-3xl border-2 border-dashed border-gray-200 text-gray-400 font-black uppercase tracking-widest text-[10px] hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-3"><i class="fas fa-plus-circle"></i> New Intelligence Brief</button>
@@ -344,50 +376,134 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
 
       <!-- Edit Modal - Unified approach for brevity -->
       @if (editingProduct()) {
-        <div class="fixed inset-0 bg-brand-darkest/60 backdrop-blur-xl flex items-center justify-center z-[200] p-6 animate-fade-in">
-           <div class="bg-white w-full max-w-2xl rounded-[48px] shadow-3xl overflow-hidden animate-reveal border border-white/20">
-              <div class="bg-gray-50 px-12 py-8 border-b border-gray-100 flex items-center justify-between">
+        <div class="fixed inset-0 bg-brand-darkest/60 backdrop-blur-xl flex items-center justify-center z-[200] p-4 animate-fade-in">
+           <div class="bg-white w-full max-w-3xl rounded-[48px] shadow-3xl overflow-hidden animate-reveal border border-white/20 flex flex-col max-h-[95vh]">
+              <div class="bg-gray-50 px-10 py-7 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
                 <div>
                   <h3 class="font-black text-brand-darkest uppercase tracking-widest text-[10px] mb-1">Entity Modification</h3>
-                  <p class="text-[9px] text-brand-primary font-black uppercase tracking-widest">Secure Update Interface</p>
+                  <p class="text-[9px] text-brand-primary font-black uppercase tracking-widest">Secure Product Interface</p>
                 </div>
                 <button (click)="editingProduct.set(null)" class="w-10 h-10 rounded-xl hover:bg-white transition-all text-gray-400 flex items-center justify-center border border-transparent hover:border-gray-100">
                   <i class="fas fa-times text-xs"></i>
                 </button>
               </div>
 
-              <div class="p-12 space-y-8">
-                <div class="space-y-4">
-                  <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Asset Nomenclature</label>
-                  <input class="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all shadow-inner" [(ngModel)]="editingProduct()!.name" placeholder="Formal Identification" />
+              <div class="p-10 space-y-8 overflow-y-auto">
+
+                <!-- Product Image Upload (FIXED) -->
+                <div class="space-y-3">
+                  <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Product Image</label>
+                  <div class="flex gap-5 items-center">
+                    <div class="w-28 h-28 bg-gray-50 border border-gray-100 rounded-2xl overflow-hidden flex-shrink-0 shadow-inner flex items-center justify-center p-2">
+                      @if (editingProduct()!.image) {
+                        <img [src]="editingProduct()!.image" class="max-w-full max-h-full object-contain" />
+                      } @else {
+                        <i class="fas fa-image text-gray-200 text-3xl"></i>
+                      }
+                    </div>
+                    <div class="flex-grow space-y-2">
+                      <input #productImgInput type="file" class="hidden" accept="image/*" (change)="onFileSelected($event, 'product')" />
+                      <button (click)="productImgInput.click()" class="w-full bg-gray-50 p-3 rounded-xl text-[9px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center hover:border-brand-primary hover:text-brand-primary transition-all text-gray-500 flex items-center justify-center gap-2">
+                        <i class="fas fa-folder-open"></i> Upload Local File
+                      </button>
+                      <div class="flex items-center gap-2">
+                        <i class="fas fa-link text-gray-300 text-xs"></i>
+                        <input class="flex-grow bg-gray-50 p-3 rounded-xl text-[11px] border border-gray-100 outline-none focus:ring-1 focus:ring-brand-primary" placeholder="Or paste image URL..." (change)="onUrlInput($any($event.target).value, 'product')" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                
-                <div class="grid grid-cols-2 gap-6">
-                  <div class="space-y-4">
-                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Current Classification</label>
-                    <select class="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingProduct()!.category">
+
+                <!-- Name + Category + Weight + Price -->
+                <div class="grid grid-cols-2 gap-5">
+                  <div class="col-span-2 space-y-2">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Product Name</label>
+                    <input class="w-full bg-gray-50 p-4 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingProduct()!.name" placeholder="Full Product Name" />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Category</label>
+                    <select class="w-full bg-gray-50 p-4 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingProduct()!.category">
                       @for (cat of appData().categories; track cat.id) {
                         <option [value]="cat.name">{{ cat.name }}</option>
                       }
                     </select>
                   </div>
-                  <div class="space-y-4">
-                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Technical Mass</label>
-                    <input class="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingProduct()!.weight" placeholder="Approx Weight" />
+                  <div class="space-y-2">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Weight</label>
+                    <input class="w-full bg-gray-50 p-4 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingProduct()!.weight" placeholder="e.g. 150 kg" />
+                  </div>
+                  <div class="col-span-2 space-y-2">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Price</label>
+                    <input class="w-full bg-gray-50 p-4 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingProduct()!.price" placeholder="e.g. Contact for Quote or ₹25,000" />
                   </div>
                 </div>
 
-                <div class="space-y-4">
-                  <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Asset Management</label>
-                  <div class="flex gap-4 items-center">
-                    <div class="w-20 h-20 bg-gray-50 border rounded-2xl overflow-hidden flex-shrink-0">
-                      @if (editingProduct()!.image) { <img [src]="editingProduct()!.image" class="w-full h-full object-cover" /> }
-                    </div>
-                    <div class="flex-grow">
-                      <input type="file" id="product-img-upload" class="hidden" (change)="onFileSelected($event, 'product')" />
-                      <label htmlFor="product-img-upload" class="w-full block bg-gray-50 p-4 rounded-xl text-[9px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all">Upload Technical Image</label>
-                    </div>
+                <!-- Description -->
+                <div class="space-y-2">
+                  <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Short Description</label>
+                  <textarea class="w-full bg-gray-50 p-4 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all shadow-inner min-h-[90px]" [(ngModel)]="editingProduct()!.description" placeholder="Short product summary..."></textarea>
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Long Description</label>
+                  <textarea class="w-full bg-gray-50 p-4 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all shadow-inner min-h-[130px]" [(ngModel)]="editingProduct()!.longDescription" placeholder="Detailed product description..."></textarea>
+                </div>
+
+                <!-- Features -->
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400">Key Features</label>
+                    <button (click)="addFeature('features')" class="text-[9px] font-black uppercase tracking-widest text-brand-primary hover:underline flex items-center gap-1"><i class="fas fa-plus-circle text-xs"></i> Add</button>
                   </div>
+                  @for (feat of editingProduct()!.features; track $index; let fi = $index) {
+                    <div class="flex items-center gap-3">
+                      <input class="flex-grow bg-gray-50 p-3 rounded-xl border border-gray-100 font-bold text-sm outline-none focus:ring-1 focus:ring-brand-primary" [(ngModel)]="editingProduct()!.features[fi]" placeholder="Feature line..." />
+                      <button (click)="removeFeature('features', fi)" class="w-9 h-9 rounded-xl bg-red-50 text-red-400 hover:text-red-600 flex items-center justify-center flex-shrink-0"><i class="fas fa-times text-xs"></i></button>
+                    </div>
+                  }
+                </div>
+
+                <!-- Technical Features -->
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400">Technical Features</label>
+                    <button (click)="addFeature('technicalFeatures')" class="text-[9px] font-black uppercase tracking-widest text-brand-primary hover:underline flex items-center gap-1"><i class="fas fa-plus-circle text-xs"></i> Add</button>
+                  </div>
+                  @for (feat of (editingProduct()!.technicalFeatures || []); track $index; let ti = $index) {
+                    <div class="flex items-center gap-3">
+                      <input class="flex-grow bg-gray-50 p-3 rounded-xl border border-gray-100 font-bold text-sm outline-none focus:ring-1 focus:ring-brand-primary" [(ngModel)]="editingProduct()!.technicalFeatures![ti]" placeholder="Technical feature..." />
+                      <button (click)="removeFeature('technicalFeatures', ti)" class="w-9 h-9 rounded-xl bg-red-50 text-red-400 hover:text-red-600 flex items-center justify-center flex-shrink-0"><i class="fas fa-times text-xs"></i></button>
+                    </div>
+                  }
+                </div>
+
+                <!-- Salient Specs -->
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400">Salient Specs (Badges)</label>
+                    <button (click)="addFeature('salientSpecs')" class="text-[9px] font-black uppercase tracking-widest text-brand-primary hover:underline flex items-center gap-1"><i class="fas fa-plus-circle text-xs"></i> Add</button>
+                  </div>
+                  @for (spec of (editingProduct()!.salientSpecs || []); track $index; let si = $index) {
+                    <div class="flex items-center gap-3">
+                      <input class="flex-grow bg-gray-50 p-3 rounded-xl border border-gray-100 font-bold text-sm outline-none focus:ring-1 focus:ring-brand-primary" [(ngModel)]="editingProduct()!.salientSpecs![si]" placeholder="e.g. Fire Rating: 120 mins" />
+                      <button (click)="removeFeature('salientSpecs', si)" class="w-9 h-9 rounded-xl bg-red-50 text-red-400 hover:text-red-600 flex items-center justify-center flex-shrink-0"><i class="fas fa-times text-xs"></i></button>
+                    </div>
+                  }
+                </div>
+
+                <!-- Specifications (Key-Value) -->
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400">Specifications Table</label>
+                    <button (click)="addSpec()" class="text-[9px] font-black uppercase tracking-widest text-brand-primary hover:underline flex items-center gap-1"><i class="fas fa-plus-circle text-xs"></i> Add Row</button>
+                  </div>
+                  @for (spec of editingProduct()!.specifications; track $index; let spi = $index) {
+                    <div class="flex items-center gap-3">
+                      <input class="w-2/5 bg-gray-50 p-3 rounded-xl border border-gray-100 font-black text-[11px] uppercase outline-none focus:ring-1 focus:ring-brand-primary" [(ngModel)]="editingProduct()!.specifications[spi].label" placeholder="Label (e.g. Capacity)" />
+                      <span class="text-gray-300">:</span>
+                      <input class="flex-grow bg-gray-50 p-3 rounded-xl border border-gray-100 font-bold text-sm outline-none focus:ring-1 focus:ring-brand-primary" [(ngModel)]="editingProduct()!.specifications[spi].value" placeholder="Value (e.g. 50L)" />
+                      <button (click)="removeSpec(spi)" class="w-9 h-9 rounded-xl bg-red-50 text-red-400 hover:text-red-600 flex items-center justify-center flex-shrink-0"><i class="fas fa-times text-xs"></i></button>
+                    </div>
+                  }
                 </div>
 
                 <div class="flex gap-4 pt-4">
@@ -403,7 +519,87 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
         </div>
       }
 
+      <!-- Blog Edit Modal -->
+      @if (editingBlog()) {
+        <div class="fixed inset-0 bg-brand-darkest/60 backdrop-blur-xl flex items-center justify-center z-[200] p-6 animate-fade-in">
+           <div class="bg-white w-full max-w-3xl rounded-[48px] shadow-3xl overflow-hidden animate-reveal border border-white/20 flex flex-col max-h-[90vh]">
+              <div class="bg-gray-50 px-12 py-8 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+                <div>
+                  <h3 class="font-black text-brand-darkest uppercase tracking-widest text-[10px] mb-1">Intelligence Brief Editor</h3>
+                  <p class="text-[9px] text-brand-primary font-black uppercase tracking-widest">Secure Article Management</p>
+                </div>
+                <button (click)="editingBlog.set(null)" class="w-10 h-10 rounded-xl hover:bg-white transition-all text-gray-400 flex items-center justify-center border border-transparent hover:border-gray-100">
+                  <i class="fas fa-times text-xs"></i>
+                </button>
+              </div>
+
+              <div class="p-12 space-y-8 overflow-y-auto">
+                <div class="grid grid-cols-2 gap-6">
+                  <div class="space-y-4">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Headline</label>
+                    <input class="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all shadow-inner" [(ngModel)]="editingBlog()!.title" placeholder="Article Title" />
+                  </div>
+                  <div class="space-y-4">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">URL Slug</label>
+                    <input class="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingBlog()!.slug" placeholder="e.g. security-update-2025" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                  <div class="space-y-4">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Author</label>
+                    <input class="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingBlog()!.author" placeholder="Author Name" />
+                  </div>
+                  <div class="space-y-4">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Publish Date</label>
+                    <input class="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingBlog()!.date" placeholder="DD/MM/YYYY" />
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Brief Excerpt</label>
+                  <textarea class="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all shadow-inner min-h-[100px]" [(ngModel)]="editingBlog()!.excerpt" placeholder="Short description..."></textarea>
+                </div>
+
+                <div class="space-y-4">
+                  <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Full Article Content</label>
+                  <textarea class="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all shadow-inner min-h-[250px]" [(ngModel)]="editingBlog()!.content" placeholder="Full HTML or text content..."></textarea>
+                </div>
+
+                <div class="space-y-4 flex-shrink-0">
+                  <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Cover Image</label>
+                  <div class="flex gap-4 items-center">
+                    <div class="w-32 h-20 bg-gray-50 border rounded-2xl overflow-hidden flex-shrink-0">
+                      @if (editingBlog()!.image) { <img [src]="editingBlog()!.image" class="w-full h-full object-cover" /> }
+                    </div>
+                    <div class="flex-grow space-y-2">
+                      <input type="file" id="blog-img-upload" class="hidden" (change)="onFileSelected($event, 'blog-edit')" />
+                      <label for="blog-img-upload" class="w-full block bg-gray-50 p-3 rounded-xl text-[9px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2">
+                        <i class="fas fa-folder-open text-xs"></i> Upload File
+                      </label>
+                      <div class="flex items-center gap-2">
+                        <i class="fas fa-link text-gray-300 text-xs"></i>
+                        <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[11px] border border-gray-100 outline-none" placeholder="Or paste cover URL..." (change)="onUrlInput($any($event.target).value, 'blog-edit')" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex gap-4 pt-4 pb-4">
+                  <button (click)="saveBlog()" class="flex-grow bg-brand-darkest text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-black transition-all active:scale-95 shadow-xl">
+                    Publish Article
+                  </button>
+                  <button (click)="editingBlog.set(null)" class="px-8 bg-gray-50 text-gray-400 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white hover:text-gray-600 transition-all border border-gray-100">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+           </div>
+        </div>
+      }
+
     </div>
+  </div>
   `,
   styles: []
 })
@@ -426,6 +622,7 @@ export class AdminPanelComponent implements OnInit {
   isDeploying = signal(false);
 
   editingProduct = signal<Product | null>(null);
+  editingBlog = signal<BlogPost | null>(null);
 
   constructor(
     private dataService: DataService,
@@ -582,29 +779,88 @@ export class AdminPanelComponent implements OnInit {
     }
   }
 
+  addFeature(field: 'features' | 'technicalFeatures' | 'salientSpecs') {
+    const p = this.editingProduct();
+    if (!p) return;
+    if (field === 'features') p.features = [...(p.features || []), ''];
+    else if (field === 'technicalFeatures') p.technicalFeatures = [...(p.technicalFeatures || []), ''];
+    else if (field === 'salientSpecs') p.salientSpecs = [...(p.salientSpecs || []), ''];
+    this.editingProduct.set({ ...p });
+  }
+
+  removeFeature(field: 'features' | 'technicalFeatures' | 'salientSpecs', idx: number) {
+    const p = this.editingProduct();
+    if (!p) return;
+    if (field === 'features') p.features = p.features.filter((_, i) => i !== idx);
+    else if (field === 'technicalFeatures') p.technicalFeatures = (p.technicalFeatures || []).filter((_, i) => i !== idx);
+    else if (field === 'salientSpecs') p.salientSpecs = (p.salientSpecs || []).filter((_, i) => i !== idx);
+    this.editingProduct.set({ ...p });
+  }
+
+  addSpec() {
+    const p = this.editingProduct();
+    if (!p) return;
+    p.specifications = [...(p.specifications || []), { label: '', value: '' }];
+    this.editingProduct.set({ ...p });
+  }
+
+  removeSpec(idx: number) {
+    const p = this.editingProduct();
+    if (!p) return;
+    p.specifications = p.specifications.filter((_, i) => i !== idx);
+    this.editingProduct.set({ ...p });
+  }
+
+  saveBlog() {
+    const b = this.editingBlog();
+    if (b) {
+      const data = this.appData();
+      const idx = data.blogs.findIndex(it => it.id === b.id);
+      if (idx > -1) data.blogs[idx] = b;
+      else data.blogs.push(b);
+      this.appData.set({ ...data });
+      this.editingBlog.set(null);
+    }
+  }
+
   async onFileSelected(event: any, type: string, idx?: number) {
-    const file = event.target.files[0];
-    if (file) {
-      this.isProcessingImage.set(true);
+    const file = event.target.files[0] as File;
+    if (!file) return;
+    this.isProcessingImage.set(true);
+    // Upload to server — images will be stored in dist/assets/uploads/
+    const url = await this.apiService.uploadImage(file);
+    if (url) {
+      this.applyImageUrl(url, type, idx);
+    } else {
+    // Fallback to base64 for local dev if server not reachable
       const reader = new FileReader();
       reader.onload = (e) => {
-        const url = e.target?.result as string;
-        const data = this.appData();
-
-        if (type === 'slide' && idx !== undefined) {
-          data.content.home.hero.slides[idx].image = url;
-        } else if (type === 'product' && this.editingProduct()) {
-          this.editingProduct.set({ ...this.editingProduct()!, image: url });
-        } else if (type === 'blog' && idx !== undefined) {
-          data.blogs[idx].image = url;
-        } else if (type === 'category' && idx !== undefined) {
-          data.categories[idx].image = url;
-        }
-
-        this.appData.set({ ...data });
-        this.isProcessingImage.set(false);
+        this.applyImageUrl(e.target?.result as string, type, idx);
       };
       reader.readAsDataURL(file);
     }
+    this.isProcessingImage.set(false);
+  }
+
+  applyImageUrl(url: string, type: string, idx?: number) {
+    const data = this.appData();
+    if (type === 'slide' && idx !== undefined) {
+      data.content.home.hero.slides[idx].image = url;
+      this.appData.set({ ...data });
+    } else if (type === 'product') {
+      this.editingProduct.set({ ...this.editingProduct()!, image: url });
+    } else if (type === 'blog-edit') {
+      this.editingBlog.set({ ...this.editingBlog()!, image: url });
+    } else if (type === 'blog' && idx !== undefined) {
+      data.blogs[idx].image = url;
+      this.appData.set({ ...data });
+    } else if (type === 'category' && idx !== undefined) {
+      data.categories[idx].image = url;
+      this.appData.set({ ...data });
+    }
+  }
+
+  onUrlInput(url: string, type: string, idx?: number) {
+    if (url.trim()) this.applyImageUrl(url.trim(), type, idx);
   }
 }

@@ -104,11 +104,9 @@ import { HeroSlide } from '../../models/types';
           @for (slide of slides; track slide.id; let i = $index) {
             <button
               (click)="setCurrent(i)"
-              class="h-1 rounded-full transition-all duration-500"
-              [class.w-8]="i === current()" [class.md:w-10]="i === current()" [class.bg-brand-primary]="i === current()"
-              [class.w-2]="i !== current()" [class.md:w-3]="i !== current()" [class.bg-white/20]="i !== current()" [class.hover:bg-white/40]="i !== current()"
-              [attr.aria-label]="'Go to slide ' + (i + 1)"
-            ></button>
+              [class]="'h-1 rounded-full transition-all duration-500 ' + (i === current() ? 'w-8 bg-brand-primary' : 'w-2 bg-white/20')"
+              [attr.aria-label]="'Go to slide ' + (i + 1)">
+            </button>
           }
         </div>
       }
