@@ -17,9 +17,10 @@ const __dirname = path.dirname(__filename);
 
 // Enhanced dist path resolution for different environments
 const getDistPath = () => {
+    // Configure paths
+    // In local dev, dist is in project root. On Hostinger, files might be in public_html itself
     const paths = [
-        path.join(__dirname, 'dist', 'new-safesmart-angular', 'browser'),
-        path.join(__dirname, 'dist', 'browser'),
+        path.join(__dirname, 'dist', 'browser'), // Note: Angular 17+ Application builder outputs to browser/ by default even if outputPath is just 'dist'
         path.join(__dirname, 'dist'),
         path.join(__dirname, 'browser')
     ];
