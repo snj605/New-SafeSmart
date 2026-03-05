@@ -15,25 +15,10 @@ app.use(bodyParser.json({ limit: '50mb' }));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Enhanced dist path resolution for different environments
-const getDistPath = () => {
-    // Configure paths
-    // In local dev, dist is in project root. On Hostinger, files might be in public_html itself
-    const paths = [
-        path.join(__dirname, 'dist', 'browser'), // Note: Angular 17+ Application builder outputs to browser/ by default even if outputPath is just 'dist'
-        path.join(__dirname, 'dist'),
-        path.join(__dirname, 'browser')
-    ];
-    for (const p of paths) {
-        if (fs.existsSync(p) && fs.existsSync(path.join(p, 'index.html'))) {
-            return p;
-        }
-    }
-    return paths[0]; // fallback
-};
-
-const distPath = getDistPath();
-console.log('📂 Serving static files from:', distPath);
+// Configure paths
+// Serve static files exclusively from the root of the 'dist' directory as expected by Hostinger and local setups
+const distPath = path.join(__dirname, 'dist');
+console.log('📂 Serving static files strictly from:', distPath);
 
 app.use(express.static(distPath));
 
