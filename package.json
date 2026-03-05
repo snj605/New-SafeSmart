@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "build": "echo 'Build skipped: using pre-compiled dist folder'",
+    "build": "ng build",
     "postinstall": "echo 'Post-install complete'"
   },
   "prettier": {
