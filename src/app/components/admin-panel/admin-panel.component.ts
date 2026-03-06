@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { DataService } from '../../services/data.service';
 import { ApiService } from '../../services/api.service';
 import { Product, BlogPost, Category, AppData } from '../../models/types';
+import { removeBackground } from '@imgly/background-removal';
 
 type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categories' | 'Blog Posts' | 'Inquiries';
 
@@ -505,6 +506,13 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                                          <i class="fas fa-link text-gray-300 text-[8px]"></i>
                                          <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[10px] border border-gray-100 outline-none" placeholder="Or paste background URL..." (change)="onUrlInput($any($event.target).value, 'slide', idx)" />
                                        </div>
+                                       @if (slide.image) {
+                                         <button (click)="handleRemoveBG('slide', idx)" [disabled]="isRemovingBG() === 'slide-' + idx"
+                                           class="w-full mt-1 bg-brand-primary/10 text-brand-primary py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all flex items-center justify-center gap-2">
+                                           @if (isRemovingBG() === 'slide-' + idx) { <i class="fas fa-spinner animate-spin"></i> Magic Processing... }
+                                           @else { <i class="fas fa-wand-magic-sparkles"></i> Remove Background }
+                                         </button>
+                                       }
                                      </div>
                                  </div>
 
@@ -527,6 +535,13 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                                          <i class="fas fa-link text-gray-300 text-[8px]"></i>
                                          <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[10px] border border-gray-100 outline-none" placeholder="Or paste product URL..." (change)="onUrlInput($any($event.target).value, 'slide-product', idx)" />
                                        </div>
+                                       @if (slide.productImage) {
+                                         <button (click)="handleRemoveBG('slide-product', idx)" [disabled]="isRemovingBG() === 'slide-product-' + idx"
+                                           class="w-full mt-1 bg-brand-primary/10 text-brand-primary py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all flex items-center justify-center gap-2">
+                                           @if (isRemovingBG() === 'slide-product-' + idx) { <i class="fas fa-spinner animate-spin"></i> Magic Processing... }
+                                           @else { <i class="fas fa-wand-magic-sparkles"></i> Remove Background }
+                                         </button>
+                                       }
                                      </div>
                                  </div>
                               </div>
@@ -627,6 +642,13 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                                 <i class="fas fa-link text-gray-300 text-xs"></i>
                                 <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[11px] border border-gray-100 outline-none" placeholder="Or paste URL..." (change)="onUrlInput($any($event.target).value, 'category', idx)" />
                               </div>
+                              @if (cat.image) {
+                                <button (click)="handleRemoveBG('category', idx)" [disabled]="isRemovingBG() === 'category-' + idx"
+                                  class="w-full mt-1 bg-brand-primary/10 text-brand-primary py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all flex items-center justify-center gap-2">
+                                  @if (isRemovingBG() === 'category-' + idx) { <i class="fas fa-spinner animate-spin"></i> Processing... }
+                                  @else { <i class="fas fa-wand-magic-sparkles"></i> Remove Background }
+                                </button>
+                              }
                             </div>
                           </div>
                         </div>
@@ -747,6 +769,13 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                         <i class="fas fa-link text-gray-300 text-xs"></i>
                         <input class="flex-grow bg-gray-50 p-3 rounded-xl text-[11px] border border-gray-100 outline-none focus:ring-1 focus:ring-brand-primary" placeholder="Or paste image URL..." (change)="onUrlInput($any($event.target).value, 'product')" />
                       </div>
+                      @if (editingProduct()!.image) {
+                         <button (click)="handleRemoveBG('product')" [disabled]="isRemovingBG() === 'product-main'"
+                           class="w-full mt-2 bg-brand-primary/10 text-brand-primary py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all flex items-center justify-center gap-2">
+                           @if (isRemovingBG() === 'product-main') { <i class="fas fa-spinner animate-spin"></i> Processing... }
+                           @else { <i class="fas fa-wand-magic-sparkles"></i> Remove Background }
+                         </button>
+                      }
                     </div>
                   </div>
                 </div>
@@ -918,6 +947,13 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                         <i class="fas fa-link text-gray-300 text-xs"></i>
                         <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[11px] border border-gray-100 outline-none" placeholder="Or paste cover URL..." (change)="onUrlInput($any($event.target).value, 'blog-edit')" />
                       </div>
+                      @if (editingBlog()?.image) {
+                        <button (click)="handleRemoveBG('blog-edit')" [disabled]="isRemovingBG() === 'blog-edit-main'"
+                          class="w-full mt-1 bg-brand-primary/10 text-brand-primary py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-brand-primary hover:text-white transition-all flex items-center justify-center gap-2">
+                          @if (isRemovingBG() === 'blog-edit-main') { <i class="fas fa-spinner animate-spin"></i> Processing... }
+                          @else { <i class="fas fa-wand-magic-sparkles"></i> Remove Background }
+                        </button>
+                      }
                     </div>
                   </div>
                 </div>
@@ -955,6 +991,7 @@ export class AdminPanelComponent implements OnInit {
 
   feedback = signal<{ msg: string; type: 'success' | 'error' } | null>(null);
   isProcessingImage = signal(false);
+  isRemovingBG = signal<string | null>(null); // Track which image is being processed
   isSaving = signal(false);
   isDeploying = signal(false);
 
@@ -1371,5 +1408,56 @@ export class AdminPanelComponent implements OnInit {
 
   onUrlInput(url: string, type: string, idx?: number) {
     if (url.trim()) this.applyImageUrl(url.trim(), type, idx);
+  }
+
+  async handleRemoveBG(type: string, idx?: number) {
+    let currentUrl = '';
+    const data = this.appData();
+
+    // Get current URL based on type
+    if (type === 'slide' && idx !== undefined) currentUrl = data.content.home.hero.slides[idx].image;
+    else if (type === 'slide-product' && idx !== undefined) currentUrl = data.content.home.hero.slides[idx].productImage || '';
+    else if (type === 'product') currentUrl = this.editingProduct()?.image || '';
+    else if (type === 'blog-edit') currentUrl = this.editingBlog()?.image || '';
+    else if (type === 'category' && idx !== undefined) currentUrl = data.categories[idx].image;
+
+    if (!currentUrl) {
+      this.showFeedback('No image to process', 'error');
+      return;
+    }
+
+    const processId = `${type}-${idx ?? 'main'}`;
+    this.isRemovingBG.set(processId);
+
+    try {
+      this.showFeedback('Removing background... please wait.', 'success');
+      // process image - this returns a blob
+      const blob = await removeBackground(currentUrl, {
+        progress: (prog: any, step: any) => { console.log(`BG-Removal [${step}]: ${Math.round(prog * 100)}%`); }
+      });
+
+      // Convert blob to file for upload
+      const file = new File([blob], `removed_bg_${Date.now()}.png`, { type: 'image/png' });
+
+      // Upload processed image
+      const newUrl = await this.apiService.uploadImage(file);
+      if (newUrl) {
+        this.applyImageUrl(newUrl, type, idx);
+        this.showFeedback('Magic! Background removed.');
+      } else {
+        // Fallback to local preview if server fails
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.applyImageUrl(e.target?.result as string, type, idx);
+          this.showFeedback('Magic! Background removed (local only).');
+        };
+        reader.readAsDataURL(file);
+      }
+    } catch (err) {
+      console.error('BG Removal failed', err);
+      this.showFeedback('Magic failed! Image may be too complex.', 'error');
+    } finally {
+      this.isRemovingBG.set(null);
+    }
   }
 }
