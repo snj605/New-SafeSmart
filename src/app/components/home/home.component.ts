@@ -98,13 +98,13 @@ import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
                   [class]="'stagger-' + ((idx % 3) + 1)"
                 >
                   <div class="absolute inset-0 overflow-hidden">
-                    <img
-                      [src]="cat.image"
-                      loading="lazy"
-                      decoding="async"
-                      class="w-full h-full object-cover grayscale opacity-10 group-hover:grayscale-0 group-hover:opacity-40 transition duration-700 scale-100 group-hover:scale-110"
-                      [alt]="cat.name"
-                    />
+                      <img
+                        [src]="cat.image"
+                        loading="lazy"
+                        decoding="async"
+                        class="w-full h-full object-cover transition duration-700 scale-100 group-hover:scale-110 opacity-30 grayscale-[0.8] lg:grayscale lg:opacity-10 lg:group-hover:grayscale-0 lg:group-hover:opacity-40"
+                        [alt]="cat.name"
+                      />
                   </div>
                   <div class="relative z-10">
                     <div class="w-14 h-14 md:w-16 md:h-16 bg-brand-darkest rounded-2xl flex items-center justify-center text-white mb-6 md:mb-8 group-hover:bg-brand-primary group-hover:scale-110 transition duration-300 shadow-xl">

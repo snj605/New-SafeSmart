@@ -14,6 +14,7 @@ if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder('ipv4first');
 }
 import multer from 'multer';
+import cron from 'node-cron';
 
 const app = express();
 app.use(cors());
@@ -125,6 +126,8 @@ const ContactMessageSchema = new mongoose.Schema({
     phone: { type: String, required: false },
     subject: { type: String, required: false },
     message: { type: String, required: true },
+    status: { type: String, enum: ['New', 'Contacted', 'Resolved'], default: 'New' },
+    lastFollowUpAt: { type: Date, default: null },
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -205,6 +208,55 @@ app.get('/api/inquiries', async (req, res) => {
     try {
         const inquiries = await ContactMessage.find().sort({ createdAt: -1 });
         res.json(inquiries);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.patch('/api/inquiries/:id', async (req, res) => {
+    try {
+        const { status } = req.body;
+        const inquiry = await ContactMessage.findByIdAndUpdate(
+            req.params.id,
+            { status, lastFollowUpAt: Date.now() },
+            { new: true }
+        );
+        if (!inquiry) return res.status(404).json({ message: 'Inquiry not found' });
+        res.json(inquiry);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/inquiries/:id', async (req, res) => {
+    try {
+        const inquiry = await ContactMessage.findByIdAndDelete(req.params.id);
+        if (!inquiry) return res.status(404).json({ message: 'Inquiry not found' });
+        res.json({ message: 'Inquiry deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/inquiries/batch', async (req, res) => {
+    try {
+        const { ids, operation, status } = req.body;
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ message: 'No IDs provided' });
+        }
+
+        if (operation === 'delete') {
+            await ContactMessage.deleteMany({ _id: { $in: ids } });
+            return res.json({ message: `${ids.length} inquiries deleted` });
+        } else if (operation === 'updateStatus') {
+            await ContactMessage.updateMany(
+                { _id: { $in: ids } },
+                { status, lastFollowUpAt: Date.now() }
+            );
+            return res.json({ message: `${ids.length} inquiries updated to ${status}` });
+        }
+
+        res.status(400).json({ message: 'Invalid operation' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -338,6 +390,71 @@ app.post('/api/contact', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+// --- Scheduled Tasks (Cron Jobs) ---
+
+const sendInquiryReminder = async (type) => {
+    try {
+        if (mongoose.connection.readyState !== 1) return;
+
+        const pendingInquiries = await ContactMessage.find({
+            status: { $in: ['New', 'Contacted'] }
+        }).sort({ createdAt: -1 });
+
+        if (pendingInquiries.length === 0) {
+            console.log(`[CRON] ${type}: No pending inquiries to report.`);
+            return;
+        }
+
+        const title = type === 'MORNING' ? 'Morning Security BriefING' : 'Evening Performance Review';
+        const subtitle = type === 'MORNING' ? 'Pending inquiries awaiting action' : 'Summary of unresolved inquiries for today';
+
+        const inquiryListHtml = pendingInquiries.map(i => `
+            <div style="padding: 15px; border-bottom: 1px solid #f1f5f9;">
+                <p style="margin: 0; font-size: 14px; font-weight: 700; color: #1e293b;">${i.name} - <span style="color: #005b96;">${i.status}</span></p>
+                <p style="margin: 5px 0; font-size: 12px; color: #64748b;">${i.subject || 'General'}</p>
+                <p style="margin: 0; font-size: 11px; color: #94a3b8;">Received: ${new Date(i.createdAt).toLocaleString()}</p>
+            </div>
+        `).join('');
+
+        const mailOptions = {
+            from: '"SafeSmart System" <safesmart.in@gmail.com>',
+            to: 'safesmart.in@gmail.com',
+            subject: `[SYSTEM] ${title} - ${pendingInquiries.length} Pending`,
+            html: `
+            <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                <div style="background-color: #011f4b; padding: 30px; text-align: center;">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 2px;">${title}</h1>
+                    <p style="color: #60a5fa; margin: 5px 0 0; font-size: 11px; text-transform: uppercase;">${subtitle}</p>
+                </div>
+                <div style="background-color: #ffffff; padding: 20px;">
+                    ${inquiryListHtml}
+                </div>
+                <div style="padding: 20px; text-align: center; background-color: #f1f5f9;">
+                    <a href="https://yogisafe.com/admin" style="background-color: #011f4b; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase;">Open Admin Command Center</a>
+                </div>
+            </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log(`[CRON] ${type} Reminder Sent: ${pendingInquiries.length} inquiries.`);
+    } catch (err) {
+        console.error(`[CRON] ${type} Error:`, err.message);
+    }
+};
+
+// 11:00 AM Reminder (Every day)
+cron.schedule('0 11 * * *', () => {
+    console.log('[CRON] Executing 11 AM Morning Reminder...');
+    sendInquiryReminder('MORNING');
+}, { timezone: "Asia/Kolkata" });
+
+// 05:00 PM Summary (Every day)
+cron.schedule('0 17 * * *', () => {
+    console.log('[CRON] Executing 5 PM Evening Summary...');
+    sendInquiryReminder('EVENING');
+}, { timezone: "Asia/Kolkata" });
 
 // Catchall for SPA
 app.get(/.*/, (req, res) => {

@@ -48,7 +48,7 @@ import { HeroSlide } from '../../models/types';
                   <div class="absolute -inset-16 md:-inset-24 bg-brand-primary/10 rounded-full blur-[100px] md:blur-[140px] group-hover:bg-brand-primary/20 transition-all duration-[2000ms]"></div>
                   
                   <img 
-                    [src]="lockerImageUrl" 
+                    [src]="slide.productImage || lockerImageUrl"
                     class="relative z-10 w-full h-auto drop-shadow-[0_40px_60px_rgba(0,0,0,0.6)] md:drop-shadow-[0_60px_90px_rgba(0,0,0,0.7)] animate-float"
                     alt="SafeSmart Security Unit"
                   />

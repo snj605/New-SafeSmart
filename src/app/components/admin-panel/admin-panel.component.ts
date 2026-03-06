@@ -13,7 +13,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="min-h-screen bg-gray-50 flex flex-col lg:flex-row font-sans relative">
+    <div class="min-h-screen bg-gray-50 flex flex-col font-sans relative">
       <!-- Security Overlay -->
       @if (!isAuthenticated()) {
         <div class="fixed inset-0 z-[1000] bg-brand-darkest/40 backdrop-blur-3xl flex items-center justify-center p-6 overflow-hidden">
@@ -80,36 +80,28 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
         </div>
       }
 
-      <!-- Mobile Header for Admin -->
-      <div class="lg:hidden bg-brand-darkest text-white p-4 flex items-center justify-between sticky top-0 z-[60] border-b border-white/10">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center text-white">
-            <i class="fas fa-shield-halved text-xs"></i>
-          </div>
-          <span class="text-xs font-black italic tracking-tighter">CMS ENGINE</span>
-        </div>
-        <button (click)="toggleSidebar()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/10">
-          <i [class]="'fas ' + (isSidebarOpen() ? 'fa-times' : 'fa-bars')"></i>
-        </button>
-      </div>
+      <!-- Sidebar Overlay -->
+      @if (isSidebarOpen()) {
+        <div (click)="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[45] animate-fade-in"></div>
+      }
 
-      <aside [class]="'w-full lg:w-80 glass-dark text-white flex flex-col fixed lg:sticky top-0 lg:h-screen z-50 shadow-2xl border-none transition-all duration-300 ' + (isSidebarOpen() ? 'translate-x-0' : '-translate-x-full lg:translate-x-0')">
-        <div class="p-10 border-b border-white/5">
+      <aside [class]="'w-[80%] md:w-80 lg:w-80 glass-dark text-white flex flex-col fixed top-0 h-screen z-50 shadow-2xl border-none transition-all duration-500 ease-in-out ' + (isSidebarOpen() ? 'translate-x-0' : '-translate-x-full')">
+        <div class="p-8 lg:p-10 border-b border-white/5">
           <div class="flex items-center gap-4 mb-10">
-            <div class="w-12 h-12 bg-brand-primary rounded-2xl flex items-center justify-center text-white shadow-lg">
-              <i class="fas fa-shield-halved text-xl"></i>
+            <div class="w-10 h-10 lg:w-12 lg:h-12 bg-brand-primary rounded-2xl flex items-center justify-center text-white shadow-lg">
+              <i class="fas fa-shield-halved text-lg lg:text-xl"></i>
             </div>
             <div>
-              <h2 class="text-xl font-black italic tracking-tighter leading-none text-white">CMS ENGINE</h2>
-              <span class="text-[9px] text-brand-primary font-black uppercase tracking-[0.3em]">SafeSmart Security</span>
+              <h2 class="text-lg lg:text-xl font-black italic tracking-tighter leading-none text-white uppercase">CMS ENGINE</h2>
+              <span class="text-[8px] lg:text-[9px] text-brand-primary font-black uppercase tracking-[0.3em]">SafeSmart Security</span>
             </div>
           </div>
           
-          <nav class="space-y-2">
+          <nav class="space-y-1.5">
             @for (tab of tabs; track tab) {
               <button
-                (click)="activeTab.set(tab)"
-                [class]="'w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ' + (activeTab() === tab ? 'bg-brand-primary text-white shadow-2xl' : 'text-slate-400 hover:bg-white/5 hover:text-white')"
+                (click)="activeTab.set(tab); isSidebarOpen.set(false)"
+                [class]="'w-full flex items-center gap-4 px-5 py-3.5 lg:px-6 lg:py-4 rounded-2xl text-[9px] lg:text-[10px] font-black uppercase tracking-widest transition-all ' + (activeTab() === tab ? 'bg-brand-primary text-white shadow-2xl' : 'text-slate-400 hover:bg-white/5 hover:text-white')"
               >
                 <i [class]="'fas fa-' + getTabIcon(tab) + ' text-sm'"></i>
                 {{ tab }}
@@ -139,7 +131,10 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
       <div class="flex-grow flex flex-col min-w-0">
         <header class="h-20 lg:h-20 bg-white lg:glass border-b border-slate-200/50 px-6 lg:px-12 flex items-center justify-between sticky top-0 z-40">
           <div class="flex items-center gap-4">
-            <span class="w-1.5 h-6 lg:w-2 lg:h-8 bg-brand-primary rounded-full"></span>
+            <button (click)="toggleSidebar()" class="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 hover:text-brand-primary flex items-center justify-center transition-all lg:mr-2">
+              <i class="fas fa-bars"></i>
+            </button>
+            <span class="hidden md:block w-1.5 h-6 lg:w-2 lg:h-8 bg-brand-primary rounded-full"></span>
             <h1 class="text-lg lg:text-2xl font-black text-brand-darkest uppercase italic tracking-tighter truncate max-w-[150px] md:max-w-none">{{ activeTab() }}</h1>
           </div>
           
@@ -167,78 +162,310 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
 
                 @if (activeTab() === 'Inquiries') {
                   <div class="space-y-8 animate-reveal">
-                    <div class="flex items-center justify-between mb-8">
-                      <div>
-                        <h2 class="text-3xl font-black text-brand-darkest uppercase italic tracking-tighter">User Queries</h2>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Real-time Lead Intelligence</p>
+                    <!-- Inquiry Header & Intelligence controls -->
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-12">
+                      <div class="space-y-2">
+                        <h2 class="text-3xl lg:text-4xl font-black text-brand-darkest uppercase italic tracking-tighter leading-none">Lead Intelligence</h2>
+                        <div class="flex items-center flex-wrap gap-4">
+                          <span class="flex items-center gap-2 text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-slate-400">
+                             <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Data Sync Active
+                          </span>
+                          <span class="hidden md:block w-1 h-1 rounded-full bg-slate-200"></span>
+                          <span class="text-[9px] lg:text-[10px] font-black uppercase tracking-widest text-brand-primary">
+                            {{ inquiries().length }} Strategic Leads Located
+                          </span>
+                        </div>
                       </div>
-                      <button (click)="exportInquiriesToExcel()" class="bg-brand-primary text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:shadow-2xl transition active:scale-95 flex items-center gap-2">
-                        <i class="fas fa-file-excel"></i> Export CSV
-                      </button>
+
+                      <div class="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full lg:w-auto">
+                        <div class="bg-slate-100/60 p-1.5 rounded-2xl flex items-center border border-slate-100/50 backdrop-blur-sm">
+                          @for (f of ['All', 'New', 'Contacted', 'Resolved']; track f) {
+                            <button (click)="inquiryFilter.set($any(f)); inquiryPage.set(1)"
+                                    [class]="'flex-grow md:flex-none px-4 lg:px-6 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ' + (inquiryFilter() === f ? 'bg-white text-brand-primary shadow-sm' : 'text-slate-400 hover:text-slate-600')">
+                              {{ f }}
+                            </button>
+                          }
+                        </div>
+                        <button (click)="exportInquiriesToExcel()" class="bg-brand-darkest text-white px-7 py-4 rounded-2xl font-black uppercase tracking-widest text-[9px] hover:bg-black transition active:scale-95 flex items-center justify-center gap-3 shadow-2xl shadow-black/10">
+                          <i class="fas fa-file-export italic"></i> Strategic Export
+                        </button>
+                      </div>
                     </div>
 
-                    @if (isLoadingInquiries()) {
-                      <div class="flex flex-col items-center justify-center py-20">
-                        <div class="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Loading Inquiries...</p>
+                    <!-- Bulk Actions -->
+                    @if (selectedInquiryIds().length > 0) {
+                      <div class="bg-brand-primary/5 border border-brand-primary/10 p-5 rounded-[32px] flex flex-col md:flex-row items-center justify-between gap-6 animate-reveal mb-8">
+                        <div class="flex items-center gap-4 w-full md:w-auto">
+                           <div class="w-10 h-10 rounded-2xl bg-brand-primary text-white flex items-center justify-center text-sm font-black shadow-lg shadow-brand-primary/30">{{ selectedInquiryIds().length }}</div>
+                           <span class="text-[10px] font-black uppercase tracking-widest text-brand-primary">Entities Selected for Protocol</span>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-center gap-2 w-full md:w-auto">
+                           <button (click)="handleBulkAction('markContacted')" class="flex-grow md:flex-none bg-white text-blue-600 px-5 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest border border-blue-100 hover:bg-blue-50 transition shadow-sm">Log Contact</button>
+                           <button (click)="handleBulkAction('markResolved')" class="flex-grow md:flex-none bg-white text-green-600 px-5 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest border border-green-100 hover:bg-green-50 transition shadow-sm">Resolve</button>
+                           <button (click)="handleBulkAction('delete')" class="flex-grow md:flex-none bg-white text-red-600 px-5 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest border border-red-100 hover:bg-red-50 transition shadow-sm">Purge</button>
+                           <button (click)="selectedInquiryIds.set([])" class="w-12 h-12 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-600 transition bg-slate-50">
+                             <i class="fas fa-times"></i>
+                           </button>
+                        </div>
                       </div>
-                    } @else if (inquiries().length === 0) {
-                      <div class="text-center py-20 bg-slate-50 rounded-[32px] border border-slate-100">
-                        <i class="fas fa-inbox text-5xl text-slate-200 mb-4"></i>
-                        <p class="text-xs font-black uppercase tracking-widest text-slate-400">No inquiries found</p>
+                    }
+
+                    @if (isLoadingInquiries()) {
+                      <div class="flex flex-col items-center justify-center py-32 bg-slate-50/50 rounded-[40px] border border-slate-100 border-dashed">
+                        <div class="w-16 h-16 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mb-6"></div>
+                        <p class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 animate-pulse">Syncing lead intelligence...</p>
                       </div>
                     } @else {
-                      <div class="overflow-x-auto">
-                        <table class="w-full border-separate border-spacing-y-4">
-                          <thead>
-                            <tr class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-left">
-                              <th class="px-6 pb-2">Ident</th>
-                              <th class="px-6 pb-2">Subject</th>
-                              <th class="px-6 pb-2">Contact</th>
-                              <th class="px-6 pb-2">Date</th>
-                              <th class="px-6 pb-2">Stats</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            @for (item of inquiries(); track item._id) {
-                              <tr class="bg-white hover:bg-slate-50/80 transition group rounded-[24px]">
-                                <td class="px-6 py-8 rounded-l-[24px]">
-                                  <div class="flex items-center gap-4">
-                                    <div class="w-10 h-10 rounded-xl bg-brand-darkest flex items-center justify-center text-white text-xs font-black">
-                                      {{ (item.name?.[0] || 'Q').toUpperCase() }}
+                      <!-- Desktop High-Fidelity Table (Visible on Large Screens) -->
+                      <div class="hidden lg:block bg-white rounded-[40px] border border-slate-100 shadow-sm overflow-hidden animate-reveal">
+                        <div class="overflow-x-auto">
+                          <table class="w-full">
+                            <thead>
+                              <tr class="bg-slate-50/50 border-b border-slate-100">
+                                <th class="px-6 py-6 text-left w-12">
+                                  <input type="checkbox" (change)="toggleAllSelection()" [checked]="selectedInquiryIds().length === paginatedInquiries().length && paginatedInquiries().length > 0" class="rounded border-slate-200 text-brand-primary focus:ring-brand-primary" />
+                                </th>
+                                <th class="px-6 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Entity ID</th>
+                                <th class="px-6 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Topic Payload</th>
+                                <th class="px-6 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Secure Line</th>
+                                <th class="px-6 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Inquiry Status</th>
+                                <th class="px-6 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Timestamp</th>
+                                <th class="px-6 py-6 text-right"></th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (item of paginatedInquiries(); track item._id) {
+                                <tr class="group hover:bg-slate-50/50 transition-colors border-t border-slate-50">
+                                  <td class="px-6 py-8">
+                                    <input type="checkbox" (change)="toggleSelection(item._id)" [checked]="selectedInquiryIds().includes(item._id)" class="rounded border-slate-200 text-brand-primary focus:ring-brand-primary" />
+                                  </td>
+                                  <td class="px-6 py-8">
+                                    <div class="flex items-center gap-4">
+                                      <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold text-xs">
+                                        {{ (item.name[0] || 'U') | uppercase }}
+                                      </div>
+                                      <div>
+                                        <div class="text-[11px] font-black uppercase tracking-tight text-slate-900">{{ item.name }}</div>
+                                        <div class="text-[9px] text-slate-400 lowercase">{{ item.email }}</div>
+                                      </div>
                                     </div>
-                                    <div>
-                                      <div class="font-black text-brand-darkest text-sm uppercase leading-none mb-1">{{ item.name }}</div>
-                                      <div class="text-[9px] font-bold text-slate-400 tracking-tight">{{ item.email }}</div>
+                                  </td>
+                                  <td class="px-6 py-8">
+                                    <div class="text-[11px] font-bold text-slate-600 line-clamp-1 max-w-[200px]">{{ item.subject || 'N/A' }}</div>
+                                  </td>
+                                  <td class="px-6 py-8">
+                                    <div class="text-xs font-bold text-slate-600">{{ item.phone || 'No phone' }}</div>
+                                  </td>
+                                  <td class="px-6 py-8">
+                                    <div [class]="'px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest inline-block ' +
+                                      (item.status === 'Resolved' ? 'bg-green-100 text-green-600' :
+                                       item.status === 'Contacted' ? 'bg-blue-100 text-blue-600' :
+                                       'bg-red-100 text-red-600')">
+                                      {{ item.status || 'New' }}
                                     </div>
-                                  </div>
-                                </td>
-                                <td class="px-6 py-8">
-                                  <div class="font-black text-brand-darkest text-xs uppercase italic truncate max-w-[200px]">{{ item.subject || 'General inquiry' }}</div>
-                                </td>
-                                <td class="px-6 py-8">
-                                  <div class="text-xs font-bold text-slate-600">{{ item.phone || 'No phone' }}</div>
-                                </td>
-                                <td class="px-6 py-8">
-                                  <div class="text-[10px] font-bold text-slate-400">{{ item.createdAt | date:'MMM d, y' }}</div>
-                                </td>
-                                <td class="px-6 py-8 rounded-r-[24px] text-right">
-                                  <button (click)="alert(item.message)" class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-brand-primary hover:text-white transition group-hover:shadow-lg">
-                                    <i class="fas fa-eye text-xs"></i>
+                                  </td>
+                                  <td class="px-6 py-8">
+                                    <div class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">
+                                      {{ getTimeAgo(item.createdAt) }}
+                                    </div>
+                                    <div class="text-[8px] opacity-40">{{ item.createdAt | date:'MMM d, HH:mm' }}</div>
+                                  </td>
+                                  <td class="px-6 py-8 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                      <select (change)="updateInquiryStatus(item._id, $any($event.target).value)"
+                                              class="bg-slate-50 border-none text-[8px] font-black uppercase tracking-widest rounded-lg px-2 py-2 outline-none focus:ring-1 focus:ring-brand-primary">
+                                        <option [selected]="!item.status || item.status === 'New'">New</option>
+                                        <option [selected]="item.status === 'Contacted'">Contacted</option>
+                                        <option [selected]="item.status === 'Resolved'">Resolved</option>
+                                      </select>
+                                      <button (click)="toggleExpand(item._id)" [class]="'w-10 h-10 rounded-xl flex items-center justify-center transition ' + (expandedInquiryId() === item._id ? 'bg-brand-primary text-white shadow-lg' : 'bg-slate-100 text-slate-400 hover:bg-brand-primary hover:text-white')">
+                                        <i class="fas" [class.fa-eye]="expandedInquiryId() !== item._id" [class.fa-eye-slash]="expandedInquiryId() === item._id"></i>
+                                      </button>
+                                      <button (click)="deleteInquiry(item._id)" class="w-10 h-10 rounded-xl bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition flex items-center justify-center">
+                                        <i class="fas fa-trash text-xs"></i>
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                                @if (expandedInquiryId() === item._id) {
+                                  <tr class="bg-slate-50/50">
+                                    <td colspan="7" class="px-10 py-10">
+                                      <div class="animate-reveal grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                        <div class="space-y-6">
+                                          <div class="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm relative overflow-hidden">
+                                            <div class="absolute top-0 left-0 w-2 h-full bg-brand-primary"></div>
+                                            <div class="flex items-center gap-3 mb-4">
+                                              <i class="fas fa-quote-left text-brand-primary/20 text-xl"></i>
+                                              <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Inquiry Message</h4>
+                                            </div>
+                                            <p class="text-[13px] text-slate-600 leading-relaxed font-medium whitespace-pre-wrap">{{ item.message }}</p>
+                                          </div>
+
+                                          <div class="flex flex-wrap gap-3">
+                                            <button (click)="updateInquiryStatus(item._id, 'Contacted')" class="flex-grow bg-blue-500 text-white py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-[9px] hover:bg-blue-600 transition active:scale-95 shadow-xl shadow-blue-500/20 flex items-center justify-center gap-2">
+                                              <i class="fas fa-headset"></i> Log Contact
+                                            </button>
+                                            <button (click)="updateInquiryStatus(item._id, 'Resolved')" class="flex-grow bg-green-500 text-white py-4 px-6 rounded-2xl font-black uppercase tracking-widest text-[9px] hover:bg-green-600 transition active:scale-95 shadow-xl shadow-green-500/20 flex items-center justify-center gap-2">
+                                              <i class="fas fa-check-double"></i> Resolve
+                                            </button>
+                                            <button (click)="deleteInquiry(item._id)" class="bg-red-50 text-red-500 w-14 h-14 rounded-2xl flex items-center justify-center hover:bg-red-500 hover:text-white transition shadow-sm border border-red-100">
+                                              <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                          </div>
+                                        </div>
+
+                                        <div class="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm space-y-6">
+                                          <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                            <i class="fas fa-id-card text-brand-primary text-xs"></i> Sender Intelligence
+                                          </h4>
+                                          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                              <div class="text-[9px] font-black uppercase text-slate-300 tracking-[0.2em] mb-1">Full Name</div>
+                                              <div class="text-xs font-black text-slate-700 uppercase italic tracking-tighter">{{ item.name }}</div>
+                                            </div>
+                                            <div>
+                                              <div class="text-[9px] font-black uppercase text-slate-300 tracking-[0.2em] mb-1">Secure Line</div>
+                                              <div class="text-xs font-bold text-slate-600">{{ item.phone || 'N/A' }}</div>
+                                            </div>
+                                            <div class="col-span-2">
+                                              <div class="text-[9px] font-black uppercase text-slate-300 tracking-[0.2em] mb-1">Communication Endpoint</div>
+                                              <div class="text-xs font-bold text-brand-primary">{{ item.email }}</div>
+                                            </div>
+                                            <div class="col-span-2 pt-4 border-t border-slate-50">
+                                              <div class="flex items-center justify-between">
+                                                <div class="space-y-1">
+                                                   <div class="text-[8px] font-black uppercase text-slate-300 tracking-widest">Entry Timestamp</div>
+                                                   <div class="text-[10px] font-bold text-slate-500">{{ item.createdAt | date:'medium' }}</div>
+                                                </div>
+                                                @if (item.lastFollowUpAt) {
+                                                  <div class="space-y-1 text-right">
+                                                    <div class="text-[8px] font-black uppercase text-slate-300 tracking-widest">Last Intelligence Sync</div>
+                                                    <div class="text-[10px] font-bold text-slate-500">{{ item.lastFollowUpAt | date:'medium' }}</div>
+                                                  </div>
+                                                }
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                }
+                              }
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      <!-- Mobile Strategic Data View -->
+                      <div class="lg:hidden space-y-4 animate-reveal">
+                        @for (item of paginatedInquiries(); track item._id) {
+                          <div class="bg-white rounded-[32px] p-6 border border-slate-100 shadow-sm relative overflow-hidden">
+                             @if (item.status === 'New' || !item.status) {
+                               <div class="absolute top-0 right-0 w-1.5 h-full bg-red-400"></div>
+                             }
+
+                             <div class="flex items-center justify-between mb-5">
+                                <div class="flex items-center gap-3">
+                                   <input type="checkbox" (change)="toggleSelection(item._id)" [checked]="selectedInquiryIds().includes(item._id)" class="rounded border-slate-200 text-brand-primary focus:ring-brand-primary" />
+                                   <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 font-black text-[10px] uppercase">
+                                     {{ item.name[0] }}
+                                   </div>
+                                   <div class="truncate max-w-[130px]">
+                                      <div class="text-[11px] font-black uppercase text-brand-darkest leading-none mb-1 break-all">{{ item.name }}</div>
+                                      <div class="text-[8px] font-black text-slate-400 tracking-widest uppercase italic">{{ getTimeAgo(item.createdAt) }}</div>
+                                   </div>
+                                </div>
+                                <div [class]="'px-3 py-1 rounded-full text-[7px] font-black uppercase tracking-widest ' +
+                                  (item.status === 'Resolved' ? 'bg-green-100 text-green-600' :
+                                   item.status === 'Contacted' ? 'bg-blue-100 text-blue-600' :
+                                   'bg-red-100 text-red-600')">
+                                  {{ item.status || 'New' }}
+                                </div>
+                             </div>
+
+                             <div class="bg-slate-50/80 p-4 rounded-2xl border border-slate-100 mb-6">
+                                <div class="text-[8px] font-black uppercase text-slate-400 tracking-widest mb-1.5 flex items-center gap-2">
+                                   <i class="fas fa-radar text-brand-primary opacity-30"></i> Intelligence Payload
+                                </div>
+                                <div class="text-[10px] font-bold text-slate-700 leading-relaxed truncate">{{ item.subject || 'Strategic Inquiry' }}</div>
+                             </div>
+
+                             <div class="flex items-center justify-between border-t border-slate-50 pt-4">
+                                <div class="flex flex-col gap-0.5">
+                                   <span class="text-[7px] font-black text-slate-300 uppercase tracking-widest">Secure Endpoint</span>
+                                   <span class="text-[10px] font-black text-slate-500 truncate max-w-[120px]">{{ item.phone || item.email }}</span>
+                                </div>
+                                <div class="flex gap-2">
+                                  <button (click)="toggleExpand(item._id)" [class]="'w-10 h-10 rounded-xl flex items-center justify-center transition shadow-sm ' + (expandedInquiryId() === item._id ? 'bg-brand-primary text-white' : 'bg-slate-100 text-slate-400')">
+                                    <i class="fas" [class.fa-eye]="expandedInquiryId() !== item._id" [class.fa-eye-slash]="expandedInquiryId() === item._id"></i>
                                   </button>
-                                </td>
-                              </tr>
-                              <tr class="lg:hidden">
-                                <td colspan="5" class="px-6 pb-8 pt-0">
-                                  <div class="bg-slate-100/50 p-6 rounded-2xl border border-slate-100/50">
-                                    <span class="text-[8px] font-black uppercase text-slate-400 tracking-widest block mb-2">Message Intelligence</span>
-                                    <p class="text-xs text-slate-600 leading-relaxed italic">"{{ item.message }}"</p>
-                                  </div>
-                                </td>
-                              </tr>
+                                  <button (click)="deleteInquiry(item._id)" class="w-10 h-10 rounded-xl bg-red-50 text-red-400 flex items-center justify-center border border-red-100 active:scale-95 transition">
+                                    <i class="fas fa-trash-alt text-[10px]"></i>
+                                  </button>
+                                </div>
+                             </div>
+
+                             @if (expandedInquiryId() === item._id) {
+                                <div class="mt-8 pt-6 border-t border-slate-100 animate-reveal space-y-6">
+                                   <div class="bg-brand-darkest text-white/90 p-5 rounded-2xl shadow-xl">
+                                      <div class="text-[8px] font-black uppercase text-brand-primary tracking-widest mb-4 flex items-center gap-2">
+                                         <i class="fas fa-quote-left opacity-30"></i> Decrypted Signal
+                                      </div>
+                                      <p class="text-[12px] leading-relaxed font-medium whitespace-pre-wrap">{{ item.message }}</p>
+                                   </div>
+
+                                   <div class="grid grid-cols-1 gap-3">
+                                      <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
+                                         <div>
+                                            <div class="text-[8px] font-black uppercase text-slate-300 mb-0.5">Communication Line</div>
+                                            <div class="text-[10px] font-black text-brand-primary break-all">{{ item.email }}</div>
+                                         </div>
+                                         <a [href]="'mailto:' + item.email" class="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400"><i class="fas fa-envelope text-xs"></i></a>
+                                      </div>
+                                      @if (item.phone) {
+                                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
+                                           <div>
+                                              <div class="text-[8px] font-black uppercase text-slate-300 mb-0.5">Secure Voice</div>
+                                              <div class="text-[10px] font-black text-slate-500">{{ item.phone }}</div>
+                                           </div>
+                                           <a [href]="'tel:' + item.phone" class="w-8 h-8 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400"><i class="fas fa-phone text-xs"></i></a>
+                                        </div>
+                                      }
+                                   </div>
+
+                                   <div class="flex gap-2">
+                                      <button (click)="updateInquiryStatus(item._id, 'Contacted')" class="flex-grow bg-blue-500 text-white rounded-2xl py-4 text-[9px] font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 active:scale-95 transition">Update Status</button>
+                                      <button (click)="updateInquiryStatus(item._id, 'Resolved')" class="flex-grow bg-green-500 text-white rounded-2xl py-4 text-[9px] font-black uppercase tracking-widest shadow-xl shadow-green-500/20 active:scale-95 transition">Secure Entity</button>
+                                   </div>
+                                </div>
+                             }
+                          </div>
+                        }
+                      </div>
+
+                      <!-- Pagination -->
+                      <div class="flex flex-col md:flex-row justify-between items-center gap-6 mt-8" *ngIf="totalPages() > 1">
+                        <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                          Summary: Page {{ inquiryPage() }} of {{ totalPages() }}
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <button (click)="inquiryPage.set(inquiryPage() - 1)" [disabled]="inquiryPage() === 1" class="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-brand-primary disabled:opacity-30 transition-all">
+                            <i class="fas fa-chevron-left text-xs"></i>
+                          </button>
+
+                          <div class="flex items-center gap-1">
+                            @for (p of [].constructor(totalPages()); track $index) {
+                              <button (click)="inquiryPage.set($index + 1)" [class]="'w-10 h-10 rounded-xl text-[10px] font-black transition-all ' + (inquiryPage() === $index + 1 ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20' : 'bg-white border border-slate-100 text-slate-400 hover:border-brand-primary hover:text-brand-primary')">
+                                {{ $index + 1 }}
+                              </button>
                             }
-                          </tbody>
-                        </table>
+                          </div>
+
+                          <button (click)="inquiryPage.set(inquiryPage() + 1)" [disabled]="inquiryPage() === totalPages()" class="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-brand-primary disabled:opacity-30 transition-all">
+                            <i class="fas fa-chevron-right text-xs"></i>
+                          </button>
+                        </div>
                       </div>
                     }
                   </div>
@@ -464,8 +691,8 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
       <!-- Edit Modal - Unified approach for brevity -->
       @if (editingProduct()) {
         <div class="fixed inset-0 bg-brand-darkest/60 backdrop-blur-xl flex items-center justify-center z-[200] p-2 md:p-4 animate-fade-in">
-           <div class="bg-white w-full max-w-3xl rounded-[32px] md:rounded-[48px] shadow-3xl overflow-hidden animate-reveal border border-white/20 flex flex-col max-h-[98vh]">
-              <div class="bg-gray-50 px-10 py-7 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+            <div class="bg-white w-full max-w-3xl rounded-t-[32px] md:rounded-[48px] lg:rounded-[48px] shadow-3xl overflow-hidden animate-reveal border border-white/20 flex flex-col h-full md:h-auto max-h-screen md:max-h-[98vh]">
+              <div class="bg-gray-50 px-6 md:px-10 py-5 md:py-7 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
                 <div>
                   <h3 class="font-black text-brand-darkest uppercase tracking-widest text-[10px] mb-1">Entity Modification</h3>
                   <p class="text-[9px] text-brand-primary font-black uppercase tracking-widest">Secure Product Interface</p>
@@ -475,7 +702,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                 </button>
               </div>
 
-              <div class="p-10 space-y-8 overflow-y-auto">
+              <div class="p-6 md:p-10 space-y-6 md:space-y-8 overflow-y-auto">
 
                 <!-- Product Image Upload (FIXED) -->
                 <div class="space-y-3">
@@ -502,7 +729,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                 </div>
 
                 <!-- Name + Category + Weight + Price -->
-                <div class="grid grid-cols-2 gap-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
                   <div class="col-span-2 space-y-2">
                     <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Product Name</label>
                     <input class="w-full bg-gray-50 p-4 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingProduct()!.name" placeholder="Full Product Name" />
@@ -609,8 +836,8 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
       <!-- Blog Edit Modal -->
       @if (editingBlog()) {
         <div class="fixed inset-0 bg-brand-darkest/60 backdrop-blur-xl flex items-center justify-center z-[200] p-6 animate-fade-in">
-           <div class="bg-white w-full max-w-3xl rounded-[48px] shadow-3xl overflow-hidden animate-reveal border border-white/20 flex flex-col max-h-[90vh]">
-              <div class="bg-gray-50 px-12 py-8 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+           <div class="bg-white w-full max-w-3xl rounded-t-[32px] md:rounded-[48px] shadow-3xl overflow-hidden animate-reveal border border-white/20 flex flex-col h-full md:h-auto max-h-screen md:max-h-[90vh]">
+              <div class="bg-gray-50 px-6 md:px-12 py-6 md:py-8 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
                 <div>
                   <h3 class="font-black text-brand-darkest uppercase tracking-widest text-[10px] mb-1">Intelligence Brief Editor</h3>
                   <p class="text-[9px] text-brand-primary font-black uppercase tracking-widest">Secure Article Management</p>
@@ -620,8 +847,8 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                 </button>
               </div>
 
-              <div class="p-12 space-y-8 overflow-y-auto">
-                <div class="grid grid-cols-2 gap-6">
+              <div class="p-6 md:p-12 space-y-6 md:space-y-8 overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div class="space-y-4">
                     <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Headline</label>
                     <input class="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all shadow-inner" [(ngModel)]="editingBlog()!.title" placeholder="Article Title" />
@@ -632,7 +859,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div class="space-y-4">
                     <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Author</label>
                     <input class="w-full bg-gray-50 p-5 rounded-2xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingBlog()!.author" placeholder="Author Name" />
@@ -713,8 +940,31 @@ export class AdminPanelComponent implements OnInit {
 
   isSidebarOpen = signal(false); // Mobile sidebar state
 
+  // Inquiries State
   inquiries = signal<any[]>([]);
+  inquiryFilter = signal<'All' | 'New' | 'Contacted' | 'Resolved'>('All');
+  inquiryPage = signal(1);
+  pageSize = 10;
+  selectedInquiryIds = signal<string[]>([]);
+  expandedInquiryId = signal<string | null>(null);
   isLoadingInquiries = signal(false);
+
+  filteredInquiries = computed(() => {
+    let list = this.inquiries();
+    const filter = this.inquiryFilter();
+    if (filter !== 'All') {
+      list = list.filter(i => (i.status || 'New') === filter);
+    }
+    return list;
+  });
+
+  paginatedInquiries = computed(() => {
+    const list = this.filteredInquiries();
+    const start = (this.inquiryPage() - 1) * this.pageSize;
+    return list.slice(start, start + this.pageSize);
+  });
+
+  totalPages = computed(() => Math.ceil(this.filteredInquiries().length / this.pageSize));
 
   @HostListener('window:keydown.escape', ['$event'])
   handleEscape(event: any) {
@@ -784,6 +1034,89 @@ export class AdminPanelComponent implements OnInit {
 
   alert(msg: string) {
     window.alert(msg);
+  }
+
+  getTimeAgo(date: any): string {
+    const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000);
+    if (seconds < 60) return 'Just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  }
+
+  updateInquiryStatus(id: string, status: string) {
+    this.apiService.updateInquiryStatus(id, status).subscribe({
+      next: () => {
+        this.showFeedback('Status Updated');
+        this.fetchInquiries();
+      },
+      error: (err) => {
+        console.error('Error updating status', err);
+        this.showFeedback('Failed to update status', 'error');
+      }
+    });
+  }
+
+  deleteInquiry(id: string) {
+    if (!confirm('Are you sure you want to delete this inquiry? This action cannot be undone.')) return;
+    this.apiService.deleteInquiry(id).subscribe({
+      next: () => {
+        this.showFeedback('Inquiry Deleted');
+        this.fetchInquiries();
+      },
+      error: () => this.showFeedback('Failed to delete inquiry', 'error')
+    });
+  }
+
+  toggleSelection(id: string) {
+    const selected = this.selectedInquiryIds();
+    if (selected.includes(id)) {
+      this.selectedInquiryIds.set(selected.filter(i => i !== id));
+    } else {
+      this.selectedInquiryIds.set([...selected, id]);
+    }
+  }
+
+  toggleAllSelection() {
+    if (this.selectedInquiryIds().length === this.paginatedInquiries().length) {
+      this.selectedInquiryIds.set([]);
+    } else {
+      this.selectedInquiryIds.set(this.paginatedInquiries().map(i => i._id));
+    }
+  }
+
+  handleBulkAction(action: string) {
+    const ids = this.selectedInquiryIds();
+    if (ids.length === 0) return;
+
+    if (action === 'delete') {
+      if (!confirm(`Delete ${ids.length} inquiries?`)) return;
+      this.apiService.batchInquiryOperation(ids, 'delete').subscribe({
+        next: () => {
+          this.showFeedback(`${ids.length} Inquiries Deleted`);
+          this.selectedInquiryIds.set([]);
+          this.fetchInquiries();
+        },
+        error: () => this.showFeedback('Bulk delete failed', 'error')
+      });
+    } else if (action === 'markContacted' || action === 'markResolved' || action === 'markNew') {
+      const status = action === 'markContacted' ? 'Contacted' : (action === 'markResolved' ? 'Resolved' : 'New');
+      this.apiService.batchInquiryOperation(ids, 'updateStatus', status).subscribe({
+        next: () => {
+          this.showFeedback('Batch Status Updated');
+          this.selectedInquiryIds.set([]);
+          this.fetchInquiries();
+        },
+        error: () => this.showFeedback('Batch update failed', 'error')
+      });
+    }
+  }
+
+  toggleExpand(id: string) {
+    this.expandedInquiryId.update(currentId => currentId === id ? null : id);
   }
 
   handleLogin() {

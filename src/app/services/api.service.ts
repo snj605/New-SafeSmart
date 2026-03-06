@@ -131,4 +131,16 @@ export class ApiService {
   getInquiries(): Observable<any[]> {
     return this.http.get<any[]>(`${this.BASE_URL}/inquiries`);
   }
+
+  updateInquiryStatus(id: string, status: string): Observable<any> {
+    return this.http.patch(`${this.BASE_URL}/inquiries/${id}`, { status });
+  }
+
+  deleteInquiry(id: string): Observable<any> {
+    return this.http.delete(`${this.BASE_URL}/inquiries/${id}`);
+  }
+
+  batchInquiryOperation(ids: string[], operation: 'delete' | 'updateStatus', status?: string): Observable<any> {
+    return this.http.post(`${this.BASE_URL}/inquiries/batch`, { ids, operation, status });
+  }
 }

@@ -34,24 +34,32 @@ import { Product, Category } from '../../models/types';
               @for (product of filteredProducts(); track product.id) {
                 <a 
                   [routerLink]="['/product', product.id]"
-                  class="group bg-white rounded-[40px] overflow-hidden shadow-sm hover:shadow-[0_40px_80px_-20px_rgba(1,31,75,0.15)] transition-all border border-gray-100 flex flex-col h-full hover:-translate-y-2 duration-500"
+                  class="group relative h-[550px] rounded-[48px] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700 border border-gray-100 flex flex-col justify-end p-6 hover:-translate-y-2"
                 >
-                  <div class="relative h-80 overflow-hidden bg-gray-50 border-b">
-                    <img [src]="product.image" [alt]="product.name" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
-                    <div class="absolute top-6 left-6 bg-brand-primary text-white text-[9px] px-4 py-1.5 rounded-full font-black uppercase tracking-widest shadow-xl">
-                      {{ product.category }}
-                    </div>
+                  <!-- Background Asset Layer -->
+                  <div class="absolute inset-0 z-0">
+                    <img [src]="product.image" [alt]="product.name" class="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-110 group-hover:rotate-1" />
+                    <!-- Dynamic Overlay -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-darkest/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
                   </div>
-                  <div class="p-10 flex flex-col flex-grow">
-                    <h3 class="text-xl font-black text-brand-darkest mb-4 uppercase tracking-tight group-hover:text-brand-primary transition">{{ product.name }}</h3>
-                    <p class="text-xs text-gray-500 mb-8 line-clamp-3 leading-loose italic">{{ product.description }}</p>
-                    <div class="mt-auto flex items-center justify-between pt-8 border-t border-gray-50">
+
+                  <!-- Tag Entity -->
+                  <div class="absolute top-8 left-8 z-20 bg-brand-primary text-white text-[9px] px-5 py-2 rounded-full font-black uppercase tracking-[0.2em] shadow-xl backdrop-blur-sm bg-opacity-90">
+                    {{ product.category }}
+                  </div>
+
+                  <!-- Glass Intelligence Card -->
+                  <div class="relative z-10 glass p-8 md:p-10 rounded-[36px] flex flex-col transition-all duration-500 group-hover:mb-2 translate-y-2 group-hover:translate-y-0">
+                    <h3 class="text-xl font-black text-brand-darkest mb-3 uppercase tracking-tight group-hover:text-brand-primary transition leading-none italic">{{ product.name }}</h3>
+                    <p class="text-[11px] text-slate-600 mb-8 line-clamp-2 leading-relaxed italic opacity-80 group-hover:opacity-100 transition">{{ product.description }}</p>
+
+                    <div class="flex items-center justify-between pt-6 border-t border-slate-400/10">
                       <div>
-                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-400 block mb-1">Price Start From</span>
-                        <span class="text-xl font-black text-brand-darkest">{{ product.price }}</span>
+                        <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 block mb-1">Asset Value</span>
+                        <span class="text-lg font-black text-brand-darkest tracking-tight">{{ product.price }}</span>
                       </div>
-                      <div class="w-12 h-12 rounded-2xl bg-brand-darkest group-hover:bg-brand-primary text-white flex items-center justify-center transition shadow-lg">
-                        <i class="fas fa-chevron-right text-xs"></i>
+                      <div class="w-12 h-12 rounded-2xl bg-brand-darkest group-hover:bg-brand-primary text-white flex items-center justify-center transition shadow-lg group-hover:shadow-brand-primary/30">
+                        <i class="fas fa-arrow-right text-xs"></i>
                       </div>
                     </div>
                   </div>
