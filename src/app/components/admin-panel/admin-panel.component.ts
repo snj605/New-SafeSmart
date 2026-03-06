@@ -486,9 +486,10 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                                  <label class="text-[9px] font-black uppercase tracking-widest opacity-50 ml-1">Sub-headline</label>
                                  <input class="w-full bg-white p-3 md:p-4 rounded-xl text-sm border outline-none" placeholder="Sub-headline" [(ngModel)]="slide.subtitle" />
                               </div>
-                              <div class="md:col-span-2">
+                              <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+                                 <!-- Background Image -->
                                  <div class="flex gap-4 items-center">
-                                    <div class="w-20 h-20 bg-white border rounded-xl flex-shrink-0 overflow-hidden">
+                                    <div class="w-16 h-16 bg-white border rounded-xl flex-shrink-0 overflow-hidden">
                                       @if (slide.image) { <img [src]="slide.image" class="w-full h-full object-cover" /> }
                                     </div>
                                      <div class="flex-grow space-y-2">
@@ -499,10 +500,32 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                                          class="hidden"
                                          (change)="onFileSelected($event, 'slide', idx)"
                                        />
-                                       <label [for]="'home-slide-' + idx" class="w-full block bg-white p-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"><i class="fas fa-folder-open text-xs"></i>Upload File</label>
+                                       <label [for]="'home-slide-' + idx" class="w-full block bg-white p-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"><i class="fas fa-mountain text-xs"></i>Upload Background</label>
                                        <div class="flex items-center gap-2">
-                                         <i class="fas fa-link text-gray-300 text-xs"></i>
-                                         <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[11px] border border-gray-100 outline-none" placeholder="Or paste image URL..." (change)="onUrlInput($any($event.target).value, 'slide', idx)" />
+                                         <i class="fas fa-link text-gray-300 text-[8px]"></i>
+                                         <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[10px] border border-gray-100 outline-none" placeholder="Or paste background URL..." (change)="onUrlInput($any($event.target).value, 'slide', idx)" />
+                                       </div>
+                                     </div>
+                                 </div>
+
+                                 <!-- Product Image (New Field) -->
+                                 <div class="flex gap-4 items-center">
+                                    <div class="w-16 h-16 bg-white border rounded-xl flex-shrink-0 overflow-hidden">
+                                      @if (slide.productImage) { <img [src]="slide.productImage" class="w-full h-full object-contain p-2" /> }
+                                      @else { <div class="w-full h-full flex items-center justify-center text-slate-200"><i class="fas fa-shopping-bag text-xl"></i></div> }
+                                    </div>
+                                     <div class="flex-grow space-y-2">
+                                       <label class="text-[9px] font-black uppercase tracking-widest mb-1 block opacity-50">Floating Product Image</label>
+                                       <input
+                                         type="file"
+                                         [id]="'home-slide-prod-' + idx"
+                                         class="hidden"
+                                         (change)="onFileSelected($event, 'slide-product', idx)"
+                                       />
+                                       <label [for]="'home-slide-prod-' + idx" class="w-full block bg-white p-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"><i class="fas fa-cube text-xs"></i>Upload Product</label>
+                                       <div class="flex items-center gap-2">
+                                         <i class="fas fa-link text-gray-300 text-[8px]"></i>
+                                         <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[10px] border border-gray-100 outline-none" placeholder="Or paste product URL..." (change)="onUrlInput($any($event.target).value, 'slide-product', idx)" />
                                        </div>
                                      </div>
                                  </div>
@@ -1329,6 +1352,9 @@ export class AdminPanelComponent implements OnInit {
     const data = this.appData();
     if (type === 'slide' && idx !== undefined) {
       data.content.home.hero.slides[idx].image = url;
+      this.appData.set({ ...data });
+    } else if (type === 'slide-product' && idx !== undefined) {
+      data.content.home.hero.slides[idx].productImage = url;
       this.appData.set({ ...data });
     } else if (type === 'product') {
       this.editingProduct.set({ ...this.editingProduct()!, image: url });
