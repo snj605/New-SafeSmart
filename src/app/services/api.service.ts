@@ -11,6 +11,9 @@ import { environment } from '../../environments/environment';
 export class ApiService {
   private readonly BASE_URL = environment.apiUrl || 'http://localhost:5000/api';
   private readonly LOCAL_STORAGE_KEY = 'safesmart_local_data';
+  private readonly AUTH_KEY = 'safesmart_admin_token';
+
+  token = signal<string | null>(localStorage.getItem(this.AUTH_KEY));
 
   constructor(private http: HttpClient) { }
 
@@ -29,6 +32,14 @@ export class ApiService {
     } catch (e) {
       console.error('Local storage full or disabled', e);
     }
+  }
+
+  private getAuthHeaders() {
+    return {
+      headers: {
+        'Authorization': `Bearer Token ${this.token()}`
+      }
+    };
   }
 
   private isDataHealthy(data: AppData | null): boolean {
@@ -76,33 +87,80 @@ export class ApiService {
       return false;
     }
 
-    // Always keep local storage in sync for the current browser session
     this.setLocalData('staging', data);
 
     try {
-      await firstValueFrom(this.http.post(`${this.BASE_URL}/save-preview`, { data }));
+      await firstValueFrom(this.http.post(`${this.BASE_URL}/save-preview`, { data }, this.getAuthHeaders()));
       return true;
     } catch (err) {
-      console.error('Backend save failed. Changes are local to this browser only.', err);
-      // We throw or return false so the UI knows the Cloud Sync failed
+      console.error('Backend save failed.', err);
       return false;
     }
   }
 
   async deploy(): Promise<boolean> {
     try {
-      // 1. Tell server to copy staging record to production record in MongoDB
-      await firstValueFrom(this.http.post(`${this.BASE_URL}/deploy`, {}));
-
-      // 2. If server succeeded, sync local production cache too
+      await firstValueFrom(this.http.post(`${this.BASE_URL}/deploy`, {}, this.getAuthHeaders()));
       const stagingData = this.getLocalData('staging');
       if (stagingData) {
         this.setLocalData('production', stagingData);
       }
       return true;
     } catch (err) {
-      console.error('Backend deploy failed. Production site was NOT updated.', err);
+      console.error('Backend deploy failed.', err);
       return false;
+    }
+  }
+
+  // --- Auth & Admin Methods ---
+
+  async login(username: string, password: string): Promise<any> {
+    const result = await firstValueFrom(this.http.post<any>(`${this.BASE_URL}/login`, { username, password }));
+    if (result.token) {
+      this.token.set(result.token);
+      localStorage.setItem(this.AUTH_KEY, result.token);
+    }
+    return result;
+  }
+
+  logout() {
+    this.token.set(null);
+    localStorage.removeItem(this.AUTH_KEY);
+  }
+
+  getAdminProfile(): Observable<any> {
+    return this.http.get<any>(`${this.BASE_URL}/admin/profile`, this.getAuthHeaders());
+  }
+
+  updateAdminProfile(data: any): Observable<any> {
+    return this.http.put<any>(`${this.BASE_URL}/admin/profile`, data, this.getAuthHeaders());
+  }
+
+  getAllAdmins(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.BASE_URL}/admin/manage`, this.getAuthHeaders());
+  }
+
+  createAdmin(data: any): Observable<any> {
+    return this.http.post<any>(`${this.BASE_URL}/admin/manage`, data, this.getAuthHeaders());
+  }
+
+  updateAdmin(id: string, data: any): Observable<any> {
+    return this.http.put<any>(`${this.BASE_URL}/admin/manage/${id}`, data, this.getAuthHeaders());
+  }
+
+  deleteAdmin(id: string): Observable<any> {
+    return this.http.delete<any>(`${this.BASE_URL}/admin/manage/${id}`, this.getAuthHeaders());
+  }
+
+  async uploadImage(file: File): Promise<string | null> {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const result = await firstValueFrom(this.http.post<{ url: string }>(`${this.BASE_URL.replace('/api', '')}/api/upload-image`, formData, this.getAuthHeaders()));
+      return result.url;
+    } catch (err) {
+      console.error('Image upload failed', err);
+      return null;
     }
   }
 
@@ -116,31 +174,21 @@ export class ApiService {
     }
   }
 
-  async uploadImage(file: File): Promise<string | null> {
-    try {
-      const formData = new FormData();
-      formData.append('image', file);
-      const result = await firstValueFrom(this.http.post<{ url: string }>(`${this.BASE_URL.replace('/api', '')}/api/upload-image`, formData));
-      return result.url;
-    } catch (err) {
-      console.error('Image upload failed', err);
-      return null;
-    }
-  }
+  // --- Inquiries ---
 
   getInquiries(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.BASE_URL}/inquiries`);
+    return this.http.get<any[]>(`${this.BASE_URL}/inquiries`, this.getAuthHeaders());
   }
 
   updateInquiryStatus(id: string, status: string): Observable<any> {
-    return this.http.patch(`${this.BASE_URL}/inquiries/${id}`, { status });
+    return this.http.patch(`${this.BASE_URL}/inquiries/${id}`, { status }, this.getAuthHeaders());
   }
 
   deleteInquiry(id: string): Observable<any> {
-    return this.http.delete(`${this.BASE_URL}/inquiries/${id}`);
+    return this.http.delete(`${this.BASE_URL}/inquiries/${id}`, this.getAuthHeaders());
   }
 
   batchInquiryOperation(ids: string[], operation: 'delete' | 'updateStatus', status?: string): Observable<any> {
-    return this.http.post(`${this.BASE_URL}/inquiries/batch`, { ids, operation, status });
+    return this.http.post(`${this.BASE_URL}/inquiries/batch`, { ids, operation, status }, this.getAuthHeaders());
   }
 }

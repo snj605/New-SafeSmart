@@ -1,12 +1,12 @@
 
-import { Component, OnInit, signal, computed, HostListener } from '@angular/core';
+import { Component, OnInit, signal, computed, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DataService } from '../../services/data.service';
 import { ApiService } from '../../services/api.service';
 import { Product, BlogPost, Category, AppData } from '../../models/types';
 
-type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categories' | 'Blog Posts' | 'Inquiries';
+type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categories' | 'Blog Posts' | 'Inquiries' | 'Admin Management' | 'Profile';
 
 @Component({
   selector: 'app-admin-panel',
@@ -29,9 +29,22 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                 <p class="text-[10px] font-black uppercase tracking-[0.3em] text-brand-primary">Authentication Required</p>
               </div>
 
-              <div class="space-y-6">
+               <div class="space-y-6">
                 <div>
-                  <label class="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Access Key</label>
+                  <label class="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Identity Username</label>
+                  <div class="relative">
+                    <i class="fas fa-user absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i>
+                    <input
+                      type="text"
+                      [(ngModel)]="username"
+                      class="w-full bg-white/50 border border-slate-200/50 rounded-2xl py-4 pl-12 pr-6 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all"
+                      placeholder="e.g. john_doe"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Access PIN / Password</label>
                   <div class="relative">
                     <i class="fas fa-lock absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 text-xs"></i>
                     <input 
@@ -98,7 +111,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
           </div>
           
           <nav class="space-y-1.5">
-            @for (tab of tabs; track tab) {
+            @for (tab of visibleTabs(); track tab) {
               <button
                 (click)="activeTab.set(tab); isSidebarOpen.set(false)"
                 [class]="'w-full flex items-center gap-4 px-5 py-3.5 lg:px-6 lg:py-4 rounded-2xl text-[9px] lg:text-[10px] font-black uppercase tracking-widest transition-all ' + (activeTab() === tab ? 'bg-brand-primary text-white shadow-2xl' : 'text-slate-400 hover:bg-white/5 hover:text-white')"
@@ -140,8 +153,8 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
           
           <div class="flex items-center gap-6">
             <div class="hidden md:flex flex-col items-end mr-4">
-              <span class="text-[9px] font-black text-brand-darkest uppercase tracking-widest leading-none mb-1">Administrator</span>
-              <span class="text-[8px] font-bold text-green-500 uppercase tracking-widest">Active Session</span>
+              <span class="text-[9px] font-black text-brand-darkest uppercase tracking-widest leading-none mb-1">{{ userRole() === 'super_admin' ? 'Super Admin' : 'Staff Admin' }}</span>
+              <span class="text-[8px] font-bold text-green-500 uppercase tracking-widest">{{ userFullName() }}</span>
             </div>
             <button (click)="handleLogout()" class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center border border-slate-200/50">
               <i class="fas fa-power-off text-sm"></i>
@@ -156,9 +169,115 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                 <div class="w-16 h-16 border-4 border-brand-primary border-t-transparent rounded-full animate-spin mb-6"></div>
                 <p class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Decrypting Strategy Vault...</p>
               </div>
-            } @else {
+            }
+            @else {
               <div class="glass rounded-[32px] md:rounded-[48px] shadow-3xl border border-white/60 p-6 md:p-16 relative overflow-hidden animate-reveal">
                 <div class="absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-[100px] -mr-48 -mt-48"></div>
+
+                @if (activeTab() === 'Profile') {
+                  <div class="space-y-10 animate-reveal">
+                    <div class="flex items-center gap-6 mb-8">
+                       <div class="w-24 h-24 bg-brand-primary/10 rounded-[32px] flex items-center justify-center text-brand-primary border-2 border-brand-primary/20 shadow-inner">
+                         <i class="fas fa-user-shield text-4xl"></i>
+                       </div>
+                       <div>
+                         <h2 class="text-3xl font-black text-brand-darkest uppercase italic tracking-tighter">My Secure Profile</h2>
+                         <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Manage your administrative identity</p>
+                       </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Full Name</label>
+                                <input [ngModel]="userFullName()" (ngModelChange)="userFullName.set($event)" class="w-full bg-white border border-slate-200 rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm" />
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Email Address</label>
+                                <input type="email" placeholder="admin@example.com" class="w-full bg-white border border-slate-200 rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm" />
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Contact Phone</label>
+                                <input type="tel" placeholder="+91 ..." class="w-full bg-white border border-slate-200 rounded-2xl py-4 px-6 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm" />
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div class="p-8 rounded-[40px] bg-brand-primary/5 border border-brand-primary/10">
+                                <h4 class="text-[10px] font-black uppercase tracking-widest text-brand-primary mb-6 flex items-center gap-2">
+                                    <i class="fas fa-key"></i> Security Credentials
+                                </h4>
+                                <div class="space-y-4">
+                                    <label class="block text-[9px] font-bold text-slate-500 uppercase tracking-widest">Update Password</label>
+                                    <input type="password" placeholder="New complexity password..." class="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 outline-none focus:ring-2 focus:ring-brand-primary text-sm" />
+                                    <p class="text-[8px] text-slate-400 font-bold leading-relaxed italic mt-2 text-right">Leave blank to keep existing password.</p>
+                                </div>
+                            </div>
+
+                            <button (click)="updateProfile()" class="w-full bg-brand-darkest text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-black transition-all active:scale-95 shadow-xl mt-4">
+                                Commit Profile Updates
+                            </button>
+                        </div>
+                    </div>
+                  </div>
+                }
+
+                @if (activeTab() === 'Admin Management') {
+                   <div class="space-y-10 animate-reveal">
+                      <div class="flex justify-between items-center mb-8">
+                         <div>
+                            <h2 class="text-3xl font-black text-brand-darkest uppercase italic tracking-tighter">Strategic Access Control</h2>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Manage sub-admin privileges and roles</p>
+                         </div>
+                         <button (click)="openAddAdminModal()" class="bg-brand-primary text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[9px] hover:brightness-110 shadow-2xl shadow-brand-primary/20 flex items-center gap-3">
+                           <i class="fas fa-user-plus text-xs"></i> Enroll New Admin
+                         </button>
+                      </div>
+
+                      <div class="grid gap-4">
+                         @for (admin of adminList(); track admin._id) {
+                            <div class="flex items-center justify-between p-6 bg-white border border-slate-100 rounded-[32px] hover:shadow-lg transition-all">
+                               <div class="flex items-center gap-6">
+                                  <div [class]="'w-12 h-12 rounded-2xl flex items-center justify-center text-white font-black ' + (admin.role === 'super_admin' ? 'bg-orange-500 shadow-orange-200' : 'bg-brand-primary shadow-brand-100')">
+                                    {{ admin.username[0] | uppercase }}
+                                  </div>
+                                  <div>
+                                     <div class="text-[11px] font-black uppercase tracking-tight text-slate-900 group-hover:text-brand-primary transition-colors">{{ admin.fullName }} <span class="text-[8px] opacity-40 lowercase ml-2">&#64;{{ admin.username }}</span></div>
+                                     <div class="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                                        <span class="text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1"><i class="fas fa-id-badge text-[7px]"></i> {{ admin.role === 'super_admin' ? 'Strategic Command' : 'Staff Admin' }}</span>
+                                        <span class="text-[8px] font-black uppercase tracking-widest text-slate-300">|</span>
+                                        <span class="text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1"><i class="fas fa-envelope text-[7px]"></i> {{ admin.email }}</span>
+                                        @if (admin.phone) {
+                                          <span class="text-[8px] font-black uppercase tracking-widest text-slate-300">|</span>
+                                          <span class="text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1"><i class="fas fa-phone text-[7px]"></i> {{ admin.phone }}</span>
+                                        }
+                                     </div>
+                                     <div class="flex flex-wrap gap-1 mt-2">
+                                        @for (p of admin.permissions; track p) {
+                                          <span class="px-2 py-0.5 bg-slate-50 border border-slate-100 text-[7px] font-black uppercase tracking-tighter text-slate-400 rounded-md">{{ p }}</span>
+                                        }
+                                     </div>
+                                  </div>
+                               </div>
+                               <div class="flex gap-2">
+                                  <button (click)="editAdmin(admin)" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-brand-primary hover:bg-slate-100 transition flex items-center justify-center">
+                                    <i class="fas fa-edit text-xs"></i>
+                                  </button>
+                                  <button *ngIf="admin.role !== 'super_admin'" (click)="deleteAdmin(admin._id)" class="w-10 h-10 rounded-xl bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition flex items-center justify-center">
+                                    <i class="fas fa-trash text-xs"></i>
+                                  </button>
+                               </div>
+                            </div>
+                         }
+                      </div>
+
+                      @if (adminList().length === 0) {
+                         <div class="text-center py-20 bg-slate-50 rounded-[40px] border border-dashed border-slate-200">
+                            <i class="fas fa-users-slash text-slate-200 text-6xl mb-6"></i>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">No alternate admin units detected in system.</p>
+                         </div>
+                      }
+                   </div>
+                }
 
                 @if (activeTab() === 'Inquiries') {
                   <div class="space-y-8 animate-reveal">
@@ -257,10 +376,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                                     <div class="text-xs font-bold text-slate-600">{{ item.phone || 'No phone' }}</div>
                                   </td>
                                   <td class="px-6 py-8">
-                                    <div [class]="'px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest inline-block ' +
-                                      (item.status === 'Resolved' ? 'bg-green-100 text-green-600' :
-                                       item.status === 'Contacted' ? 'bg-blue-100 text-blue-600' :
-                                       'bg-red-100 text-red-600')">
+                                    <div [class]="'px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest inline-block ' + (item.status === 'Resolved' ? 'bg-green-100 text-green-600' : (item.status === 'Contacted' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'))">
                                       {{ item.status || 'New' }}
                                     </div>
                                   </td>
@@ -376,10 +492,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                                       <div class="text-[8px] font-black text-slate-400 tracking-widest uppercase italic">{{ getTimeAgo(item.createdAt) }}</div>
                                    </div>
                                 </div>
-                                <div [class]="'px-3 py-1 rounded-full text-[7px] font-black uppercase tracking-widest ' +
-                                  (item.status === 'Resolved' ? 'bg-green-100 text-green-600' :
-                                   item.status === 'Contacted' ? 'bg-blue-100 text-blue-600' :
-                                   'bg-red-100 text-red-600')">
+                                <div [class]="'px-3 py-1 rounded-full text-[7px] font-black uppercase tracking-widest ' + (item.status === 'Resolved' ? 'bg-green-100 text-green-600' : (item.status === 'Contacted' ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'))">
                                   {{ item.status || 'New' }}
                                 </div>
                              </div>
@@ -587,10 +700,15 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                         </div>
                       </div>
 
-                      <div class="space-y-4">
-                        <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] mb-4 border-l-4 border-brand-primary pl-4">Geography</h3>
-                        <textarea class="w-full bg-gray-50 p-4 rounded-xl text-sm border outline-none min-h-[140px]" placeholder="HQ Map Address" [(ngModel)]="appData().content.contact.address"></textarea>
-                      </div>
+                        <div class="space-y-4">
+                          <h3 class="text-xs font-black text-brand-darkest uppercase tracking-[0.4em] mb-4 border-l-4 border-brand-primary pl-4">Geography & Intelligence</h3>
+                          <textarea class="w-full bg-gray-50 p-4 rounded-xl text-sm border outline-none min-h-[100px]" placeholder="HQ Map Address" [(ngModel)]="appData().content.contact.address"></textarea>
+                          <div class="space-y-2">
+                            <label class="block text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 ml-1">Google Maps Embed URL</label>
+                            <input class="w-full bg-gray-50 p-4 rounded-xl text-[10px] border outline-none font-mono" placeholder="https://www.google.com/maps/embed?..." [(ngModel)]="appData().content.contact.mapEmbed" />
+                            <p class="text-[8px] text-slate-400 italic">Paste the 'src' value from the Google Maps iframe embed code.</p>
+                          </div>
+                        </div>
                     </div>
                   </div>
                 } @else if (activeTab() === 'Categories') {
@@ -934,6 +1052,70 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
            </div>
         </div>
       }
+      @if (editingAdminModal()) {
+        <div class="fixed inset-0 bg-brand-darkest/60 backdrop-blur-xl flex items-center justify-center z-[200] p-4 animate-fade-in">
+           <div class="bg-white w-full max-w-2xl rounded-t-[32px] md:rounded-[48px] shadow-3xl overflow-hidden animate-reveal border border-white/20 flex flex-col max-h-[90vh]">
+              <div class="bg-gray-50 px-8 py-6 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
+                <div>
+                  <h3 class="font-black text-brand-darkest uppercase tracking-widest text-[10px] mb-1">Strategic Asset Enrollment</h3>
+                  <p class="text-[9px] text-brand-primary font-black uppercase tracking-widest">{{ editingAdminModal()._id ? 'Modify Existing Unit' : 'New Personnel Authorization' }}</p>
+                </div>
+                <button (click)="editingAdminModal.set(null)" class="w-10 h-10 rounded-xl hover:bg-white transition-all text-gray-400 flex items-center justify-center border border-transparent hover:border-gray-100">
+                  <i class="fas fa-times text-xs"></i>
+                </button>
+              </div>
+
+              <div class="p-8 space-y-6 overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="space-y-2">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Identity Username</label>
+                    <input class="w-full bg-gray-50 p-4 rounded-xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingAdminModal().username" [disabled]="editingAdminModal()._id" placeholder="e.g. j_smith" />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Access PIN / Password</label>
+                    <input type="password" class="w-full bg-gray-50 p-4 rounded-xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingAdminModal().password" [placeholder]="editingAdminModal()._id ? '•••••••• (Leave blank to keep)' : 'Temporary password'" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="space-y-2">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Full Personnel Name</label>
+                    <input class="w-full bg-gray-50 p-4 rounded-xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingAdminModal().fullName" placeholder="e.g. John Smith" />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Secure Email Channel</label>
+                    <input type="email" class="w-full bg-gray-50 p-4 rounded-xl border border-gray-100 outline-none focus:ring-2 focus:ring-brand-primary font-bold text-sm transition-all" [(ngModel)]="editingAdminModal().email" placeholder="admin@yogisafe.com" />
+                  </div>
+                </div>
+
+                <div class="space-y-4">
+                  <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Strategic Privileges</label>
+                  <div class="grid grid-cols-2 gap-3">
+                    @for (perm of availablePermissions; track perm) {
+                      <div (click)="togglePermission(perm)" class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 cursor-pointer transition-all" [class]="editingAdminModal().permissions.includes(perm) ? 'bg-brand-primary/5 border-brand-primary/20' : ''">
+                        <div class="w-5 h-5 rounded-md border flex items-center justify-center transition-all" [class.bg-brand-primary]="editingAdminModal().permissions.includes(perm)" [class.border-brand-primary]="editingAdminModal().permissions.includes(perm)">
+                          @if (editingAdminModal().permissions.includes(perm)) {
+                            <i class="fas fa-check text-[10px] text-white"></i>
+                          }
+                        </div>
+                        <span [class]="'text-[10px] font-black uppercase tracking-tighter ' + (editingAdminModal().permissions.includes(perm) ? 'text-brand-primary' : 'text-slate-500')">{{ perm }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                  <button (click)="saveAdmin()" class="flex-grow bg-brand-darkest text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-black transition-all active:scale-95 shadow-xl flex items-center justify-center gap-2">
+                    {{ editingAdminModal()._id ? 'Authorize Updates' : 'Commit Enrollment' }}
+                  </button>
+                  <button (click)="editingAdminModal.set(null)" class="px-8 bg-gray-50 text-gray-400 py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] hover:bg-white hover:text-gray-600 transition-all border border-gray-100">
+                    Abort
+                  </button>
+                </div>
+              </div>
+           </div>
+        </div>
+      }
 
     </div>
   </div>
@@ -944,10 +1126,37 @@ export class AdminPanelComponent implements OnInit {
   tabs: AdminPage[] = ['Home Page', 'About Us', 'Contact Info', 'Products', 'Categories', 'Blog Posts', 'Inquiries'];
   activeTab = signal<AdminPage>('Home Page');
 
+  visibleTabs = computed(() => {
+    if (this.userRole() === 'super_admin') return [...this.tabs, 'Admin Management', 'Profile'] as AdminPage[];
+    // Profile is always visible to everyone
+    return [...this.tabs.filter(t => this.userPermissions().includes(t)), 'Profile'] as AdminPage[];
+  });
+
   // Security & Authentication
-  isAuthenticated = signal(localStorage.getItem('admin_authenticated') === 'true');
-  loginKey = '';
+  isAuthenticated = signal(false);
+  userRole = signal<string>('sub_admin');
+  userPermissions = signal<string[]>([]);
+  userFullName = signal<string>('SafeSmart Admin');
+
+  username = '';
+  loginKey = ''; // Used as password
   loginError = signal('');
+
+  private idleTimer: any;
+
+  @HostListener('document:mousemove')
+  @HostListener('document:keypress')
+  @HostListener('document:click')
+  @HostListener('document:scroll')
+  resetIdleTimer() {
+    if (this.isAuthenticated()) {
+      clearTimeout(this.idleTimer);
+      this.idleTimer = setTimeout(() => {
+        this.handleLogout();
+        this.showFeedback('Session expired due to inactivity', 'error');
+      }, 30 * 60 * 1000); // 30 minutes
+    }
+  }
 
   // Reactive local state for editing
   appData = signal<AppData>(null as any);
@@ -989,6 +1198,10 @@ export class AdminPanelComponent implements OnInit {
 
   totalPages = computed(() => Math.ceil(this.filteredInquiries().length / this.pageSize));
 
+  adminList = signal<any[]>([]);
+  editingAdminModal = signal<any>(null); // For Add/Edit Modal
+  availablePermissions: string[] = ['Home Page', 'About Us', 'Contact Info', 'Products', 'Categories', 'Blog Posts', 'Inquiries', 'Admin Management'];
+
   @HostListener('window:keydown.escape', ['$event'])
   handleEscape(event: any) {
     this.editingProduct.set(null);
@@ -1002,17 +1215,34 @@ export class AdminPanelComponent implements OnInit {
 
   constructor(
     private dataService: DataService,
-    private apiService: ApiService
-  ) { }
+    public apiService: ApiService
+  ) {
+    this.isAuthenticated.set(this.apiService.token() !== null);
+  }
 
   ngOnInit() {
-    // If we're authenticated, we need data to edit.
-    // We listen to the DataService signal to ensure we get the latest data even if it loads late.
+    if (this.apiService.token()) {
+      // Re-fetch profile to sync role/name
+      this.apiService.getAdminProfile().subscribe({
+        next: (profile) => {
+          this.userRole.set(profile.role);
+          this.userFullName.set(profile.fullName);
+          this.userPermissions.set(profile.permissions);
+          this.isAuthenticated.set(true);
+          this.resetIdleTimer();
+          this.fetchInquiries();
+          if (profile.role === 'super_admin') {
+            this.fetchAdminList();
+          }
+        },
+        error: () => this.handleLogout()
+      });
+    }
+
     const currentData = this.dataService.getAppData();
     if (currentData) {
       this.appData.set(JSON.parse(JSON.stringify(currentData)));
     }
-    this.fetchInquiries();
   }
 
   fetchInquiries() {
@@ -1142,32 +1372,136 @@ export class AdminPanelComponent implements OnInit {
     this.expandedInquiryId.update(currentId => currentId === id ? null : id);
   }
 
-  handleLogin() {
-    const MASTER_KEY = 'SafeSmart2025@Gondal';
-    if (this.loginKey === MASTER_KEY) {
-      this.isAuthenticated.set(true);
-      localStorage.setItem('admin_authenticated', 'true');
-      this.showFeedback('Command Authorization Successful');
+  async handleLogin() {
+    if (!this.username || !this.loginKey) {
+      this.loginError.set('Username and Access Pin required.');
+      return;
+    }
 
-      // Refresh local data copy on successful login
+    try {
+      const res = await this.apiService.login(this.username, this.loginKey);
+      this.userRole.set(res.user.role);
+      this.userPermissions.set(res.user.permissions);
+      this.userFullName.set(res.user.fullName);
+      this.isAuthenticated.set(true);
+
+      this.showFeedback('Command Authorization Successful', 'success');
+      this.resetIdleTimer();
+      this.fetchInquiries();
+      if (res.user.role === 'super_admin') {
+        this.fetchAdminList();
+      }
+
       const currentData = this.dataService.getAppData();
       if (currentData) {
         this.appData.set(JSON.parse(JSON.stringify(currentData)));
       }
-    } else {
-      this.loginError.set('Invalid Security Key. Unauthorized Access Flagged.');
+    } catch (err: any) {
+      this.loginError.set(err.error?.message || 'Invalid Credentials. Access Restricted.');
       setTimeout(() => this.loginError.set(''), 3000);
     }
   }
 
   handleLogout() {
+    this.apiService.logout();
     this.isAuthenticated.set(false);
-    localStorage.removeItem('admin_authenticated');
+    this.activeTab.set('Home Page');
+    clearTimeout(this.idleTimer);
   }
 
-  async syncToPreview() {
-    // This provides the "Real-Time" feel by updating the DataService instantly
-    // which components like AppComponent use for the Staging view.
+  updateProfile() {
+    const data = {
+      fullName: this.userFullName(),
+      // Add other fields if needed
+    };
+    this.apiService.updateAdminProfile(data).subscribe({
+      next: () => this.showFeedback('Profile Updated Successfully', 'success'),
+      error: () => this.showFeedback('Failed to update profile', 'error')
+    });
+  }
+
+  fetchAdminList() {
+    this.apiService.getAllAdmins().subscribe({
+      next: (list) => this.adminList.set(list),
+      error: () => this.showFeedback('Failed to fetch admin list', 'error')
+    });
+  }
+
+  openAddAdminModal() {
+    this.editingAdminModal.set({
+      username: '',
+      password: '',
+      fullName: '',
+      email: '',
+      phone: '',
+      role: 'sub_admin',
+      permissions: ['Inquiries']
+    });
+  }
+
+  editAdmin(admin: any) {
+    this.editingAdminModal.set({ ...admin, password: '' }); // Don't show hashed password
+  }
+
+  togglePermission(perm: string) {
+    const current = this.editingAdminModal();
+    if (!current) return;
+
+    const permissions = [...current.permissions];
+    const idx = permissions.indexOf(perm);
+    if (idx > -1) permissions.splice(idx, 1);
+    else permissions.push(perm);
+
+    this.editingAdminModal.set({ ...current, permissions });
+  }
+
+  saveAdmin() {
+    const data = this.editingAdminModal();
+    if (!data) return;
+
+    if (!data.username || !data.fullName || (!data._id && !data.password)) {
+      this.showFeedback('All vital fields required', 'error');
+      return;
+    }
+
+    if (data._id) {
+      // Update
+      const updatePayload = { ...data };
+      if (!updatePayload.password) delete updatePayload.password;
+
+      this.apiService.updateAdmin(data._id, updatePayload).subscribe({
+        next: () => {
+          this.showFeedback('Admin Strategic Assets Updated', 'success');
+          this.fetchAdminList();
+          this.editingAdminModal.set(null);
+        },
+        error: (err) => this.showFeedback(err.error?.message || 'Update failed', 'error')
+      });
+    } else {
+      // Create
+      this.apiService.createAdmin(data).subscribe({
+        next: () => {
+          this.showFeedback('New Admin Enrolled Successfully', 'success');
+          this.fetchAdminList();
+          this.editingAdminModal.set(null);
+        },
+        error: (err) => this.showFeedback(err.error?.message || 'Enrollment failed', 'error')
+      });
+    }
+  }
+
+  deleteAdmin(id: string) {
+    if (confirm('Are you sure you want to revoke this admin access? This action is irreversible.')) {
+      this.apiService.deleteAdmin(id).subscribe({
+        next: () => {
+          this.showFeedback('Admin access revoked', 'success');
+          this.fetchAdminList();
+        },
+        error: (err) => this.showFeedback(err.error?.message || 'Revocation failed', 'error')
+      });
+    }
+  }
+  syncToPreview() {
     this.dataService.updateAppData(this.appData());
   }
 
@@ -1180,6 +1514,8 @@ export class AdminPanelComponent implements OnInit {
       case 'Categories': return 'layer-group';
       case 'Blog Posts': return 'pen-fancy';
       case 'Inquiries': return 'inbox';
+      case 'Admin Management': return 'users-cog';
+      case 'Profile': return 'user-shield';
       default: return 'circle';
     }
   }

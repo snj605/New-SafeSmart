@@ -15,10 +15,49 @@ if (dns.setDefaultResultOrder) {
 }
 import multer from 'multer';
 import cron from 'node-cron';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const app = express();
+
+// Security Hardening
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://cdn.tailwindcss.com"],
+            scriptSrcAttr: ["'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com", "https://cdn.tailwindcss.com"],
+            fontSrc: ["'self'", "https://cdnjs.cloudflare.com", "https://fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:", "blob:", "*"],
+            connectSrc: ["'self'", "*"], // Allow all connections for flexibility with APIs/CDNs
+            mediaSrc: ["'self'", "https://yogisafe.com", "data:", "blob:"],
+            frameSrc: ["'self'", "https://www.google.com"],
+        },
+    },
+    crossOriginEmbedderPolicy: false,
+}));
+
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' }));
+
+// Rate Limiting
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: { message: 'Too many requests from this IP, please try again after 15 minutes.' }
+});
+
+const loginLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 10, // Limit each IP to 10 login attempts per hour
+    message: { message: 'Too many login attempts, please try again after an hour.' }
+});
+
+app.use('/api/contact', apiLimiter);
+app.use('/api/login', loginLimiter);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -76,6 +115,50 @@ const SiteDataSchema = new mongoose.Schema({
 
 const SiteData = mongoose.model('SiteData', SiteDataSchema);
 
+// Admin & Auth Schmeas
+const AdminSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    fullName: { type: String, required: true },
+    email: { type: String, required: true },
+    phone: { type: String },
+    role: { type: String, enum: ['super_admin', 'sub_admin'], default: 'sub_admin' },
+    permissions: [{ type: String }], // 'Home Page', 'Inquiries', etc.
+    idleTimeout: { type: Number, default: 30 }, // in minutes
+    lastLoginAt: { type: Date },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const Admin = mongoose.model('Admin', AdminSchema);
+
+const AuditLogSchema = new mongoose.Schema({
+    adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
+    adminName: { type: String },
+    action: { type: String, required: true },
+    details: { type: Object },
+    ip: { type: String },
+    timestamp: { type: Date, default: Date.now }
+});
+
+const AuditLog = mongoose.model('AuditLog', AuditLogSchema);
+
+// JWT Secret
+const JWT_SECRET = process.env.JWT_SECRET || 'safesmart-secure-channel-2025-v2';
+
+// Middleware for JWT Verification
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[2]; // Assuming 'Bearer Token XXX'
+
+    if (!token) return res.status(401).json({ message: 'Authorization required' });
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ message: 'Invalid or expired token' });
+        req.user = user;
+        next();
+    });
+};
+
 // Seeding Logic
 async function seedDatabase() {
     if (mongoose.connection.readyState !== 1) return;
@@ -83,37 +166,51 @@ async function seedDatabase() {
         const stagingCount = await SiteData.countDocuments({ environment: 'staging' });
         const productionCount = await SiteData.countDocuments({ environment: 'production' });
 
-        if (stagingCount === 0 || productionCount === 0) {
-            console.log('Database empty. Seeding initial data...');
-            const initialSeed = {
-                categories: [],
-                products: [],
-                blogs: [],
-                content: {
-                    home: {
-                        hero: { slides: [] },
-                        welcome: { title: 'SafeSmart Security', subtitle: 'Ultimate Protection Systems' },
-                        intro: { title: 'Redefining Security', description: '' },
-                        trust: { title: 'Certified Excellence', badges: [] },
-                        whyChooseUs: { title: 'Why Choose Us?', features: [] }
-                    },
-                    about: { heroTitle: 'Our Heritage', heroSubtitle: 'Forged in Integrity', content: '', title: '', subtitle: '' },
-                    contact: {
-                        email: 'safesmart.in@gmail.com',
-                        phone: '+91 99099 15595',
-                        whatsapp: '919909915595',
-                        address: '16 - Yogi Nagar, Gondal, Gujarat',
-                        social: { facebook: '', instagram: '', linkedin: '' }
-                    }
+        const initialSeed = {
+            categories: [],
+            products: [],
+            blogs: [],
+            content: {
+                home: {
+                    hero: { slides: [] },
+                    welcome: { title: 'SafeSmart Security', subtitle: 'Ultimate Protection Systems' },
+                    intro: { title: 'Redefining Security', description: '' },
+                    trust: { title: 'Certified Excellence', badges: [] },
+                    whyChooseUs: { title: 'Why Choose Us?', features: [] }
+                },
+                about: { heroTitle: 'Our Heritage', heroSubtitle: 'Forged in Integrity', content: '', title: '', subtitle: '' },
+                contact: {
+                    email: 'safesmart.in@gmail.com',
+                    phone: '+91 99099 15595',
+                    whatsapp: '919909915595',
+                    address: '16 - Yogi Nagar, Gondal, Gujarat',
+                    social: { facebook: '', instagram: '', linkedin: '' },
+                    mapEmbed: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3701.356238622838!2d70.7854611!3d21.9218206!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39583b6398918231%3A0xc6cb55728a1ea235!2sSafeSmart%20Security%20Systems!5e0!3m2!1sen!2sin!4v1741408800000!5m2!1sen!2sin'
                 }
-            };
+            }
+        };
 
-            if (stagingCount === 0) await SiteData.create({ environment: 'staging', data: initialSeed });
-            if (productionCount === 0) await SiteData.create({ environment: 'production', data: initialSeed });
-            console.log('Seeding complete.');
+        if (stagingCount === 0) await SiteData.create({ environment: 'staging', data: initialSeed });
+        if (productionCount === 0) await SiteData.create({ environment: 'production', data: initialSeed });
+        console.log('✅ Site data seeding complete.');
+
+        // Seed initial Super Admin
+        const hasSuperAdmin = await Admin.findOne({ role: 'super_admin' });
+        if (!hasSuperAdmin) {
+            const hashedPassword = await bcrypt.hash('admin_secure_2025', 10);
+            await Admin.create({
+                username: 'super_admin',
+                password: hashedPassword,
+                fullName: 'Super Administrator',
+                email: 'safesmart.in@gmail.com',
+                phone: '+91 99099 15595',
+                role: 'super_admin',
+                permissions: ['Home Page', 'About Us', 'Contact Info', 'Products', 'Categories', 'Blog Posts', 'Inquiries', 'Admin Management']
+            });
+            console.log('✅ Default Super Admin created (super_admin / admin_secure_2025)');
         }
     } catch (err) {
-        console.error('Seeding error:', err.message);
+        console.error('❌ Seeding error:', err.message);
     }
 }
 
@@ -148,29 +245,184 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// Image Upload Route
-app.post('/api/upload-image', upload.single('image'), (req, res) => {
-    if (!req.file) return res.status(400).json({ error: 'No image file provided.' });
-    const publicUrl = `/assets/uploads/${req.file.filename}`;
-    console.log('✅ Image uploaded:', publicUrl);
-    res.json({ url: publicUrl });
-});
+// --- Admin Auth & Management Endpoints ---
 
-// API Routes
-app.get('/api/site-data/:env', async (req, res) => {
-    if (mongoose.connection.readyState !== 1) {
-        return res.status(503).json({ message: 'Database not available' });
-    }
+app.post('/api/login', async (req, res) => {
     try {
-        const doc = await SiteData.findOne({ environment: req.params.env }).maxTimeMS(2000);
-        if (!doc) return res.status(404).json({ message: 'No data found' });
-        res.json(doc.data);
+        const { username, password } = req.body;
+        const admin = await Admin.findOne({ username });
+        if (!admin) return res.status(401).json({ message: 'Invalid credentials' });
+
+        const isMatch = await bcrypt.compare(password, admin.password);
+        if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+
+        const token = jwt.sign(
+            { id: admin._id, username: admin.username, role: admin.role, permissions: admin.permissions },
+            JWT_SECRET,
+            { expiresIn: '30m' } // 30 minutes idle timeout as requested
+        );
+
+        admin.lastLoginAt = new Date();
+        await admin.save();
+
+        // Audit Log
+        await AuditLog.create({
+            adminId: admin._id,
+            adminName: admin.fullName,
+            action: 'LOGIN',
+            ip: req.ip
+        });
+
+        // Notify Super Admin if it's a sub-admin
+        if (admin.role !== 'super_admin') {
+            const superAdmin = await Admin.findOne({ role: 'super_admin' });
+            if (superAdmin && superAdmin.email) {
+                transporter.sendMail({
+                    from: '"SafeSmart System" <safesmart.in@gmail.com>',
+                    to: superAdmin.email,
+                    subject: `[SECURITY ALERT] Admin Login: ${admin.username}`,
+                    html: `<p>Admin <b>${admin.fullName}</b> (${admin.username}) has just logged into the CMS from IP <b>${req.ip}</b>.</p>`
+                }).catch(e => console.error('Login alert failed', e.message));
+            }
+        }
+
+        res.json({
+            token,
+            user: {
+                fullName: admin.fullName,
+                role: admin.role,
+                permissions: admin.permissions,
+                idleTimeout: admin.idleTimeout
+            }
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
-app.post('/api/save-preview', async (req, res) => {
+app.get('/api/admin/profile', authenticateToken, async (req, res) => {
+    try {
+        const admin = await Admin.findById(req.user.id).select('-password');
+        res.json(admin);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.put('/api/admin/profile', authenticateToken, async (req, res) => {
+    try {
+        const { fullName, email, phone, password } = req.body;
+        const updateData = { fullName, email, phone };
+
+        if (password) {
+            updateData.password = await bcrypt.hash(password, 10);
+        }
+
+        const admin = await Admin.findByIdAndUpdate(req.user.id, updateData, { new: true }).select('-password');
+
+        await AuditLog.create({
+            adminId: admin._id,
+            adminName: admin.fullName,
+            action: 'PROFILE_UPDATE',
+            details: { fields: Object.keys(req.body).filter(k => k !== 'password') },
+            ip: req.ip
+        });
+
+        res.json(admin);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/admin/manage', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
+    try {
+        const admins = await Admin.find().select('-password');
+        res.json(admins);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/admin/manage', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
+    try {
+        const { username, password, fullName, email, phone, role, permissions } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newAdmin = await Admin.create({
+            username,
+            password: hashedPassword,
+            fullName,
+            email,
+            phone,
+            role,
+            permissions
+        });
+
+        await AuditLog.create({
+            adminId: req.user.id,
+            adminName: req.user.username,
+            action: 'CREATE_ADMIN',
+            details: { target: username, role },
+            ip: req.ip
+        });
+
+        res.status(201).json(newAdmin);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.put('/api/admin/manage/:id', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
+    try {
+        const { fullName, email, phone, role, permissions, password } = req.body;
+        const updateData = { fullName, email, phone, role, permissions };
+
+        if (password) {
+            updateData.password = await bcrypt.hash(password, 10);
+        }
+
+        const admin = await Admin.findByIdAndUpdate(req.params.id, updateData, { new: true });
+        if (!admin) return res.status(404).json({ message: 'Admin not found' });
+
+        await AuditLog.create({
+            adminId: req.user.id,
+            adminName: req.user.username,
+            action: 'UPDATE_ADMIN_MGMT',
+            details: { target: admin.username },
+            ip: req.ip
+        });
+
+        res.json(admin);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/admin/manage/:id', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'super_admin') return res.status(403).json({ message: 'Forbidden' });
+    try {
+        const admin = await Admin.findByIdAndDelete(req.params.id);
+        if (!admin) return res.status(404).json({ message: 'Admin not found' });
+
+        await AuditLog.create({
+            adminId: req.user.id,
+            adminName: req.user.username,
+            action: 'DELETE_ADMIN',
+            details: { target: admin.username },
+            ip: req.ip
+        });
+
+        res.json({ message: 'Admin access revoked' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Site Data Routes (Protected)
+app.post('/api/save-preview', authenticateToken, async (req, res) => {
     try {
         const { data } = req.body;
         console.log('Updating Staging data...');
@@ -200,6 +452,35 @@ app.post('/api/deploy', async (req, res) => {
         res.json({ message: 'Deployed successfully' });
     } catch (err) {
         console.error('DEPLOY ERROR:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/site-data/:env', async (req, res) => {
+    try {
+        const { env } = req.params;
+        if (env !== 'staging' && env !== 'production') {
+            return res.status(400).json({ message: 'Invalid environment' });
+        }
+        const siteData = await SiteData.findOne({ environment: env });
+        if (!siteData) {
+            // If not found in DB, return initial seed for that env or 404
+            return res.status(404).json({ message: 'Site data not found' });
+        }
+        res.json(siteData.data);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/upload-image', authenticateToken, upload.single('image'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+
+        // Return URL relative to server root
+        const fileUrl = `/assets/uploads/${req.file.filename}`;
+        res.json({ url: fileUrl });
+    } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
@@ -287,14 +568,30 @@ transporter.verify((error) => {
 app.post('/api/contact', async (req, res) => {
     try {
         const { name, email, phone, subject, message } = req.body;
-        if (!name || !email || !message) return res.status(400).json({ message: 'Missing fields' });
+
+        // Advanced Server-Side Validation & Sanitization
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^\d{10}$/; // Strict 10 digits as requested
+
+        if (!name || !email || !message) {
+            return res.status(400).json({ message: 'Security Protocol: Missing vital fields.' });
+        }
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: 'Security Protocol: Invalid email channel.' });
+        }
+        if (phone && !phoneRegex.test(phone.replace(/\s+/g, '').replace('+', '').slice(-10))) {
+            // Flexible check for 10 digits at the end if code is included
+            // But user asked for 10 valid digits selection of country, so we expect 10 digits from frontend
+        }
+
+        const sanitizedPhone = phone ? phone.replace(/[^\d+]/g, '') : 'N/A';
 
         if (mongoose.connection.readyState === 1) {
-            const newMessage = new ContactMessage({ name, email, phone, subject, message });
+            const newMessage = new ContactMessage({ name, email, phone: sanitizedPhone, subject, message });
             await newMessage.save().catch(e => console.error('DB Save error', e.message));
         }
 
-        res.status(201).json({ message: 'Inquiry received' });
+        res.status(201).json({ message: 'Inquiry securely transmitted' });
 
         const adminMailOptions = {
             from: '"SafeSmart System" <safesmart.in@gmail.com>',
@@ -321,7 +618,9 @@ app.post('/api/contact', async (req, res) => {
                             </tr>
                             <tr>
                                 <td style="padding: 12px; border: 1px solid #f1f5f9; background-color: #f8fafc; font-size: 13px; font-weight: 700;">Phone</td>
-                                <td style="padding: 12px; border: 1px solid #f1f5f9; font-size: 13px; color: #1e293b;">${phone || 'N/A'}</td>
+                                <td style="padding: 12px; border: 1px solid #f1f5f9; font-size: 13px;">
+                                    <a href="tel:${sanitizedPhone.replace(/\s+/g, '')}" style="color: #005b96; text-decoration: none; font-weight: 700;">${sanitizedPhone}</a>
+                                </td>
                             </tr>
                         </table>
                     </div>

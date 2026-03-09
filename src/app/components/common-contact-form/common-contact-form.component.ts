@@ -1,8 +1,14 @@
-
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+
+interface Country {
+  code: string;
+  name: string;
+  flag: string;
+  dialCode: string;
+}
 
 @Component({
   selector: 'app-common-contact-form',
@@ -43,7 +49,7 @@ import { ApiService } from '../../services/api.service';
               <input
                 type="text"
                 formControlName="name"
-                class="w-full bg-gray-50 border-2 border-transparent focus:border-brand-primary p-4 rounded-xl md:rounded-2xl outline-none transition-all text-sm font-semibold hover:bg-gray-100"
+                class="w-full bg-gray-50 border-2 border-transparent focus:border-brand-primary p-4 rounded-xl md:rounded-2xl outline-none transition-all text-sm font-semibold hover:bg-gray-100 placeholder:text-gray-300"
                 placeholder="e.g. Alexander Shield"
               />
             </div>
@@ -52,25 +58,48 @@ import { ApiService } from '../../services/api.service';
               <input
                 type="email"
                 formControlName="email"
-                class="w-full bg-gray-50 border-2 border-transparent focus:border-brand-primary p-4 rounded-xl md:rounded-2xl outline-none transition-all text-sm font-semibold hover:bg-gray-100"
+                class="w-full bg-gray-50 border-2 border-transparent focus:border-brand-primary p-4 rounded-xl md:rounded-2xl outline-none transition-all text-sm font-semibold hover:bg-gray-100 placeholder:text-gray-300"
                 placeholder="e.g. contact@domain.com"
               />
             </div>
-            <div class="space-y-2">
-              <label class="text-[10px] font-black uppercase text-brand-darkest tracking-widest ml-1">Phone Number</label>
-              <input
-                type="tel"
-                formControlName="phone"
-                class="w-full bg-gray-50 border-2 border-transparent focus:border-brand-primary p-4 rounded-xl md:rounded-2xl outline-none transition-all text-sm font-semibold hover:bg-gray-100"
-                placeholder="e.g. +91 99099 15595"
-              />
+
+            <!-- Enhanced Phone Field with Country Flags -->
+            <div class="space-y-2 md:col-span-1">
+              <label class="text-[10px] font-black uppercase text-brand-darkest tracking-widest ml-1">Secure Contact Number</label>
+              <div class="flex gap-3">
+                <div class="relative w-32 flex-shrink-0">
+                  <select
+                    formControlName="countryCode"
+                    class="w-full bg-gray-50 border-2 border-transparent focus:border-brand-primary p-4 rounded-xl md:rounded-2xl outline-none transition-all text-sm font-bold appearance-none cursor-pointer"
+                  >
+                    @for (c of countries; track c.code) {
+                      <option [value]="c.dialCode">{{ c.flag }} {{ c.dialCode }}</option>
+                    }
+                  </select>
+                  <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 pointer-events-none"></i>
+                </div>
+                <div class="relative flex-grow">
+                  <input
+                    type="tel"
+                    formControlName="phone"
+                    (input)="onPhoneInput($event)"
+                    maxlength="10"
+                    class="w-full bg-gray-50 border-2 border-transparent focus:border-brand-primary p-4 rounded-xl md:rounded-2xl outline-none transition-all text-sm font-bold hover:bg-gray-100 placeholder:text-gray-300"
+                    placeholder="10-digit number"
+                  />
+                  @if (contactForm.get('phone')?.touched && contactForm.get('phone')?.errors?.['pattern']) {
+                    <span class="absolute -bottom-6 left-1 text-[8px] font-black uppercase text-red-500 tracking-widest animate-fade-in">Invalid Number (10 Digits Required)</span>
+                  }
+                </div>
+              </div>
             </div>
+
             <div class="space-y-2">
               <label class="text-[10px] font-black uppercase text-brand-darkest tracking-widest ml-1">Inquiry Subject</label>
               <input
                 type="text"
                 formControlName="subject"
-                class="w-full bg-gray-50 border-2 border-transparent focus:border-brand-primary p-4 rounded-xl md:rounded-2xl outline-none transition-all text-sm font-semibold hover:bg-gray-100"
+                class="w-full bg-gray-50 border-2 border-transparent focus:border-brand-primary p-4 rounded-xl md:rounded-2xl outline-none transition-all text-sm font-semibold hover:bg-gray-100 placeholder:text-gray-300"
                 placeholder="e.g. Product Specification Inquiry"
               />
             </div>
@@ -79,7 +108,7 @@ import { ApiService } from '../../services/api.service';
               <textarea
                 rows="4"
                 formControlName="message"
-                class="w-full bg-gray-50 border-2 border-transparent focus:border-brand-primary p-4 rounded-xl md:rounded-2xl outline-none transition-all text-sm font-semibold resize-none hover:bg-gray-100"
+                class="w-full bg-gray-50 border-2 border-transparent focus:border-brand-primary p-4 rounded-xl md:rounded-2xl outline-none transition-all text-sm font-semibold resize-none hover:bg-gray-100 placeholder:text-gray-300"
                 placeholder="Tell us about your security needs..."
               ></textarea>
             </div>
@@ -115,6 +144,19 @@ export class CommonContactFormComponent implements OnInit {
   contactForm: FormGroup;
   status = signal<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
+  countries: Country[] = [
+    { code: 'IN', name: 'India', flag: '🇮🇳', dialCode: '+91' },
+    { code: 'US', name: 'United States', flag: '🇺🇸', dialCode: '+1' },
+    { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', dialCode: '+44' },
+    { code: 'AE', name: 'UAE', flag: '🇦🇪', dialCode: '+971' },
+    { code: 'AU', name: 'Australia', flag: '🇦🇺', dialCode: '+61' },
+    { code: 'CA', name: 'Canada', flag: '🇨🇦', dialCode: '+1' },
+    { code: 'DE', name: 'Germany', flag: '🇩🇪', dialCode: '+49' },
+    { code: 'FR', name: 'France', flag: '🇫🇷', dialCode: '+33' },
+    { code: 'JP', name: 'Japan', flag: '🇯🇵', dialCode: '+81' },
+    { code: 'SG', name: 'Singapore', flag: '🇸🇬', dialCode: '+65' }
+  ];
+
   constructor(
     private fb: FormBuilder,
     private apiService: ApiService
@@ -122,7 +164,8 @@ export class CommonContactFormComponent implements OnInit {
     this.contactForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phone: [''],
+      countryCode: ['+91', Validators.required],
+      phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
       subject: [''],
       message: ['', Validators.required]
     });
@@ -130,20 +173,27 @@ export class CommonContactFormComponent implements OnInit {
 
   ngOnInit() { }
 
+  onPhoneInput(event: any) {
+    const val = event.target.value.replace(/[^0-9]/g, '');
+    this.contactForm.patchValue({ phone: val.slice(0, 10) }, { emitEvent: false });
+  }
+
   async handleSubmit() {
     if (this.contactForm.invalid) return;
 
     this.status.set('submitting');
 
     try {
-      // In React version, it used api.sendContactMessage(formData)
-      // I'll implement this in ApiService later or use it if already there.
-      // For now, let's assume it works.
-      const success = await this.apiService.sendContactMessage(this.contactForm.value);
+      const fullData = {
+        ...this.contactForm.value,
+        phone: `${this.contactForm.value.countryCode} ${this.contactForm.value.phone}`
+      };
+
+      const success = await this.apiService.sendContactMessage(fullData);
 
       if (success) {
         this.status.set('success');
-        this.contactForm.reset();
+        this.contactForm.reset({ countryCode: '+91' });
       } else {
         this.status.set('error');
       }
