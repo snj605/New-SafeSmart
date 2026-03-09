@@ -98,7 +98,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
         <div (click)="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[45] animate-fade-in"></div>
       }
 
-      <aside [class]="'w-[80%] md:w-80 lg:w-80 glass-dark text-white flex flex-col fixed top-0 h-screen z-50 shadow-2xl border-none transition-all duration-500 ease-in-out ' + (isSidebarOpen() ? 'translate-x-0' : '-translate-x-full')">
+      <aside [class]="'w-[80%] md:w-80 lg:w-80 glass-dark text-white flex flex-col fixed top-0 h-screen z-50 shadow-2xl border-none transition-all duration-500 ease-in-out overflow-y-auto ' + (isSidebarOpen() ? 'translate-x-0' : '-translate-x-full')">
         <div class="p-8 lg:p-10 border-b border-white/5">
           <div class="flex items-center gap-4 mb-10">
             <div class="w-10 h-10 lg:w-12 lg:h-12 bg-brand-primary rounded-2xl flex items-center justify-center text-white shadow-lg">
