@@ -43,6 +43,32 @@ export const INITIAL_DATA: AppData = {
                 { label: 'Internal (mm)', value: '508(H) x 355(W) x 279(D)' },
                 { label: 'Lock Type', value: 'Dual Key Lock / Combination Optional' }
             ],
+            defenderSpecs: [
+                { label: 'Plate Thickness (Out)', value: '3MM' },
+                { label: 'Plate Thickness (In)', value: '1.5MM' },
+                { label: 'Door Plate', value: '12MM' },
+                { label: 'Locking', value: '8 Levers Dual Control' },
+                { label: 'Fire Rating', value: '60 Minutes' }
+            ],
+            defenderPlusSpecs: [
+                { label: 'Plate Thickness (Out)', value: '4MM' },
+                { label: 'Plate Thickness (In)', value: '2MM' },
+                { label: 'Door Plate', value: '16MM' },
+                { label: 'Locking', value: '10 Levers Dual Control' },
+                { label: 'Fire Rating', value: '120 Minutes' }
+            ],
+            defenderFeatures: [
+                'Solid Steel Body construction',
+                'Standard Anti-Drill Shield',
+                'Internal Adjustable Shelf',
+                'Double wall with fire cement'
+            ],
+            defenderPlusFeatures: [
+                'Enhanced TDR (Torch & Drill Resistant) Matrix',
+                'Advanced Glass Re-locker System',
+                'Explosive Resistant Shooting Bolts',
+                'High-Density Composite Barrier'
+            ],
             applications: [
                 { name: 'Banks', image: '/assets/images/DSCF0737-copy.jpg' },
                 { name: 'Jewelers', image: '/assets/images/DSCF0760-copy.jpg' },
