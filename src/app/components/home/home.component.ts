@@ -104,10 +104,11 @@ import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
                         [src]="cat.image"
                         loading="lazy"
                         decoding="async"
-                        class="w-full h-full object-cover transition-all duration-700 scale-100 group-hover:scale-110 grayscale-0"
+                        class="w-full h-full object-cover transition-all duration-700 scale-100 group-hover:scale-110"
                         [class.opacity-100]="activeCategoryId() === cat.id"
-                        [class.opacity-80]="activeCategoryId() !== cat.id"
-                        [class.lg:opacity-80]="activeCategoryId() !== cat.id"
+                        [class.opacity-60]="activeCategoryId() !== cat.id"
+                        [class.grayscale-0]="true"
+                        [class.lg:opacity-75]="activeCategoryId() !== cat.id"
                         [class.lg:group-hover:opacity-100]="true"
                         [alt]="cat.name"
                       />
@@ -307,7 +308,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   activeCategoryId = signal<string | null>(null);
   private observer: IntersectionObserver | null = null;
 
-  constructor(private dataService: DataService) { }
+  constructor(private dataService: DataService) {
+    // Set initial active ID if possible
+    const cats = this.categories();
+    if (cats.length > 0) this.activeCategoryId.set(cats[0].id);
+  }
 
   ngOnInit() { }
 
@@ -325,8 +330,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const options = {
       root: null,
-      rootMargin: '-40% 0px -40% 0px', // Focused in middle 20% of screen
-      threshold: 0
+      rootMargin: '-20% 0px -20% 0px', // Middle 60% of screen
+      threshold: 0.1
     };
 
     this.observer = new IntersectionObserver((entries) => {
