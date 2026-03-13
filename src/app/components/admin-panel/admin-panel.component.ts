@@ -977,20 +977,104 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                   }
                 </div>
 
-                <!-- Specifications (Key-Value) -->
-                <div class="space-y-3">
+                <!-- Main Specifications (Legacy/Generic) -->
+                <div class="space-y-3 p-6 bg-gray-50 rounded-[32px] border border-gray-100">
                   <div class="flex items-center justify-between">
-                    <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400">Specifications Table</label>
+                    <label class="block text-[10px] font-black uppercase tracking-widest text-brand-primary">Legacy Specifications (Shared)</label>
                     <button (click)="addSpec()" class="text-[9px] font-black uppercase tracking-widest text-brand-primary hover:underline flex items-center gap-1"><i class="fas fa-plus-circle text-xs"></i> Add Row</button>
                   </div>
                   @for (spec of editingProduct()!.specifications; track $index; let spi = $index) {
                     <div class="flex items-center gap-3">
-                      <input class="w-2/5 bg-gray-50 p-3 rounded-xl border border-gray-100 font-black text-[11px] uppercase outline-none focus:ring-1 focus:ring-brand-primary" [(ngModel)]="editingProduct()!.specifications[spi].label" placeholder="Label (e.g. Capacity)" />
+                      <input class="w-2/5 bg-white p-3 rounded-xl border border-gray-100 font-black text-[11px] uppercase outline-none focus:ring-1 focus:ring-brand-primary" [(ngModel)]="editingProduct()!.specifications[spi].label" placeholder="Label (e.g. Capacity)" />
                       <span class="text-gray-300">:</span>
-                      <input class="flex-grow bg-gray-50 p-3 rounded-xl border border-gray-100 font-bold text-sm outline-none focus:ring-1 focus:ring-brand-primary" [(ngModel)]="editingProduct()!.specifications[spi].value" placeholder="Value (e.g. 50L)" />
+                      <input class="flex-grow bg-white p-3 rounded-xl border border-gray-100 font-bold text-sm outline-none focus:ring-1 focus:ring-brand-primary" [(ngModel)]="editingProduct()!.specifications[spi].value" placeholder="Value (e.g. 50L)" />
                       <button (click)="removeSpec(spi)" class="w-9 h-9 rounded-xl bg-red-50 text-red-400 hover:text-red-600 flex items-center justify-center flex-shrink-0"><i class="fas fa-times text-xs"></i></button>
                     </div>
                   }
+                </div>
+
+                <!-- Defender Variant Configuration -->
+                <div class="space-y-6 p-6 md:p-8 bg-brand-darkest rounded-[40px] shadow-xl text-white">
+                  <div class="flex items-center gap-4 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-brand-primary flex items-center justify-center text-white">
+                      <i class="fas fa-shield-alt text-lg"></i>
+                    </div>
+                    <div>
+                      <h4 class="text-lg font-black uppercase italic tracking-tighter text-brand-primary">Defender Config</h4>
+                      <p class="text-[8px] font-black uppercase tracking-widest text-gray-500">Variant-Specific Identity</p>
+                    </div>
+                  </div>
+
+                  <!-- Defender Specs -->
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <label class="text-[9px] font-black uppercase tracking-widest text-gray-400">Technical Specs</label>
+                      <button (click)="addVariantSpec('defender')" class="text-[9px] font-black uppercase tracking-widest text-brand-primary hover:underline">Add Spec</button>
+                    </div>
+                    @for (spec of (editingProduct()!.defenderSpecs || []); track $index; let dsi = $index) {
+                      <div class="flex items-center gap-3">
+                        <input class="w-2/5 bg-white/5 p-3 rounded-xl border border-white/10 font-black text-[11px] uppercase outline-none focus:ring-1 focus:ring-brand-primary text-white" [(ngModel)]="editingProduct()!.defenderSpecs![dsi].label" placeholder="Label" />
+                        <input class="flex-grow bg-white/5 p-3 rounded-xl border border-white/10 font-bold text-sm outline-none focus:ring-1 focus:ring-brand-primary text-white" [(ngModel)]="editingProduct()!.defenderSpecs![dsi].value" placeholder="Value" />
+                        <button (click)="removeVariantSpec('defender', dsi)" class="w-9 h-9 text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Defender Features -->
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <label class="text-[9px] font-black uppercase tracking-widest text-gray-400">Armor Features</label>
+                      <button (click)="addVariantFeature('defender')" class="text-[9px] font-black uppercase tracking-widest text-brand-primary hover:underline">Add Feature</button>
+                    </div>
+                    @for (feat of (editingProduct()!.defenderFeatures || []); track $index; let dfi = $index) {
+                      <div class="flex items-center gap-3">
+                        <input class="flex-grow bg-white/5 p-3 rounded-xl border border-white/10 font-bold text-sm outline-none focus:ring-1 focus:ring-brand-primary text-white" [(ngModel)]="editingProduct()!.defenderFeatures![dfi]" placeholder="Feature..." />
+                        <button (click)="removeVariantFeature('defender', dfi)" class="w-9 h-9 text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Defender+ Variant Configuration -->
+                <div class="space-y-6 p-6 md:p-8 bg-white rounded-[40px] shadow-xl border border-gray-100">
+                  <div class="flex items-center gap-4 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-brand-primary flex items-center justify-center text-white shadow-lg shadow-brand-primary/20">
+                      <i class="fas fa-shield-virus text-lg"></i>
+                    </div>
+                    <div>
+                      <h4 class="text-lg font-black uppercase italic tracking-tighter text-brand-darkest">Defender+ Config</h4>
+                      <p class="text-[8px] font-black uppercase tracking-widest text-brand-primary">Elite Protection Variant</p>
+                    </div>
+                  </div>
+
+                  <!-- Defender+ Specs -->
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <label class="text-[9px] font-black uppercase tracking-widest text-gray-400">Technical Specs</label>
+                      <button (click)="addVariantSpec('defenderPlus')" class="text-[9px] font-black uppercase tracking-widest text-brand-primary hover:underline">Add Spec</button>
+                    </div>
+                    @for (spec of (editingProduct()!.defenderPlusSpecs || []); track $index; let dpsi = $index) {
+                      <div class="flex items-center gap-3">
+                        <input class="w-2/5 bg-gray-50 p-3 rounded-xl border border-gray-100 font-black text-[11px] uppercase outline-none focus:ring-1 focus:ring-brand-primary" [(ngModel)]="editingProduct()!.defenderPlusSpecs![dpsi].label" placeholder="Label" />
+                        <input class="flex-grow bg-gray-50 p-3 rounded-xl border border-gray-100 font-bold text-sm outline-none focus:ring-1 focus:ring-brand-primary" [(ngModel)]="editingProduct()!.defenderPlusSpecs![dpsi].value" placeholder="Value" />
+                        <button (click)="removeVariantSpec('defenderPlus', dpsi)" class="w-9 h-9 text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Defender+ Features -->
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <label class="text-[9px] font-black uppercase tracking-widest text-gray-400">Armor Features</label>
+                      <button (click)="addVariantFeature('defenderPlus')" class="text-[9px] font-black uppercase tracking-widest text-brand-primary hover:underline">Add Feature</button>
+                    </div>
+                    @for (feat of (editingProduct()!.defenderPlusFeatures || []); track $index; let dpfi = $index) {
+                      <div class="flex items-center gap-3">
+                        <input class="flex-grow bg-gray-50 p-3 rounded-xl border border-gray-100 font-bold text-sm outline-none focus:ring-1 focus:ring-brand-primary" [(ngModel)]="editingProduct()!.defenderPlusFeatures![dpfi]" placeholder="Feature..." />
+                        <button (click)="removeVariantFeature('defenderPlus', dpfi)" class="w-9 h-9 text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>
+                      </div>
+                    }
+                  </div>
                 </div>
 
                 <div class="flex gap-4 pt-4">
@@ -1629,7 +1713,12 @@ export class AdminPanelComponent implements OnInit {
       price: 'Contact for Quote',
       image: '',
       features: [],
-      specifications: []
+      technicalFeatures: [],
+      specifications: [],
+      defenderSpecs: [],
+      defenderPlusSpecs: [],
+      defenderFeatures: [],
+      defenderPlusFeatures: []
     };
     this.editingProduct.set(newProduct);
   }
@@ -1682,6 +1771,38 @@ export class AdminPanelComponent implements OnInit {
     const p = this.editingProduct();
     if (!p) return;
     p.specifications = p.specifications.filter((_, i) => i !== idx);
+    this.editingProduct.set({ ...p });
+  }
+
+  addVariantFeature(variant: 'defender' | 'defenderPlus') {
+    const p = this.editingProduct();
+    if (!p) return;
+    const field = variant === 'defender' ? 'defenderFeatures' : 'defenderPlusFeatures';
+    p[field] = [...(p[field] || []), ''];
+    this.editingProduct.set({ ...p });
+  }
+
+  removeVariantFeature(variant: 'defender' | 'defenderPlus', idx: number) {
+    const p = this.editingProduct();
+    if (!p) return;
+    const field = variant === 'defender' ? 'defenderFeatures' : 'defenderPlusFeatures';
+    p[field] = (p[field] || []).filter((_, i) => i !== idx);
+    this.editingProduct.set({ ...p });
+  }
+
+  addVariantSpec(variant: 'defender' | 'defenderPlus') {
+    const p = this.editingProduct();
+    if (!p) return;
+    const field = variant === 'defender' ? 'defenderSpecs' : 'defenderPlusSpecs';
+    p[field] = [...(p[field] || []), { label: '', value: '' }];
+    this.editingProduct.set({ ...p });
+  }
+
+  removeVariantSpec(variant: 'defender' | 'defenderPlus', idx: number) {
+    const p = this.editingProduct();
+    if (!p) return;
+    const field = variant === 'defender' ? 'defenderSpecs' : 'defenderPlusSpecs';
+    p[field] = (p[field] || []).filter((_, i) => i !== idx);
     this.editingProduct.set({ ...p });
   }
 

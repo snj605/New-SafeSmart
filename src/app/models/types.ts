@@ -22,6 +22,10 @@ export interface Product {
   technicalFeatures?: string[];
   salientSpecs?: string[];
   specifications: ProductSpec[];
+  defenderSpecs?: ProductSpec[];
+  defenderPlusSpecs?: ProductSpec[];
+  defenderFeatures?: string[];
+  defenderPlusFeatures?: string[];
   applications?: ApplicationSector[];
   weight?: string;
 }

@@ -60,38 +60,94 @@ import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
           </div>
         </section>
 
-        <!-- Technical Stats Section -->
+        <!-- Variants Comparison Section -->
         <section class="py-24 bg-gray-50">
           <div class="container mx-auto px-6">
-             <div class="grid grid-cols-1 lg:grid-cols-2 gap-20">
-                <div>
-                   <h2 class="text-3xl font-black text-brand-darkest uppercase italic mb-10 tracking-tighter">Technical Features</h2>
-                   <ul class="space-y-4">
-                      @for (tf of product()?.technicalFeatures; track tf) {
+            <h2 class="text-3xl md:text-5xl font-black text-brand-darkest uppercase italic mb-16 tracking-tighter text-center">Engineered Variations</h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+              <!-- Defender Variant -->
+              <div class="flex flex-col">
+                <div class="bg-brand-darkest p-8 md:p-12 rounded-[48px] shadow-2xl text-white mb-10 flex-grow">
+                  <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-primary flex items-center justify-center text-white">
+                      <i class="fas fa-shield-alt text-xl"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-2xl font-black uppercase italic tracking-tighter text-brand-primary">Defender</h3>
+                      <p class="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">Standard Excellence</p>
+                    </div>
+                  </div>
+
+                  <!-- Defender Specs First -->
+                  <div class="space-y-6 mb-12">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-brand-primary/60 border-b border-white/10 pb-2">Technical Specifications</h4>
+                    @for (s of (product()?.defenderSpecs || product()?.specifications); track s.label) {
+                      <div class="flex justify-between items-center border-b border-white/5 pb-4">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">{{ s.label }}</span>
+                        <span class="text-xs font-bold italic">{{ s.value }}</span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Defender Features Second -->
+                  <div class="space-y-4">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-brand-primary/60 border-b border-white/10 pb-2">Armor Features</h4>
+                    <ul class="space-y-4">
+                      @for (tf of (product()?.defenderFeatures || product()?.technicalFeatures); track tf) {
                         <li class="flex gap-4 items-start group">
-                           <div class="w-6 h-6 rounded-lg bg-brand-primary text-white flex items-center justify-center flex-shrink-0 mt-1 shadow-lg">
-                              <i class="fas fa-check text-[10px]"></i>
-                           </div>
-                           <span class="text-gray-700 font-bold text-sm leading-relaxed">{{ tf }}</span>
+                          <div class="w-5 h-5 rounded-lg bg-brand-primary/20 text-brand-primary flex items-center justify-center flex-shrink-0 mt-1">
+                            <i class="fas fa-check text-[9px]"></i>
+                          </div>
+                          <span class="text-gray-300 font-bold text-xs leading-relaxed">{{ tf }}</span>
                         </li>
                       }
-                   </ul>
+                    </ul>
+                  </div>
                 </div>
-                <div class="bg-brand-darkest p-10 rounded-[48px] shadow-3xl text-white">
-                   <h2 class="text-2xl font-black uppercase italic mb-8 tracking-tighter text-brand-primary">Specifications</h2>
-                   <div class="space-y-6">
-                      @for (s of product()?.specifications; track s.label) {
-                        <div class="flex justify-between items-center border-b border-white/5 pb-4">
-                           <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{ s.label }}</span>
-                           <span class="text-sm font-bold italic">{{ s.value }}</span>
-                        </div>
+              </div>
+
+              <!-- Defender+ Variant -->
+              <div class="flex flex-col">
+                <div class="bg-white p-8 md:p-12 rounded-[48px] shadow-2xl text-brand-darkest mb-10 border border-gray-100 flex-grow">
+                  <div class="flex items-center gap-4 mb-8">
+                    <div class="w-12 h-12 rounded-2xl bg-brand-primary flex items-center justify-center text-white shadow-lg shadow-brand-primary/20">
+                      <i class="fas fa-shield-virus text-xl"></i>
+                    </div>
+                    <div>
+                      <h3 class="text-2xl font-black uppercase italic tracking-tighter text-brand-darkest">Defender+</h3>
+                      <p class="text-[9px] font-black uppercase tracking-[0.2em] text-brand-primary">Ultimate Protection</p>
+                    </div>
+                  </div>
+
+                  <!-- Defender+ Specs First -->
+                  <div class="space-y-6 mb-12">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-brand-primary border-b border-gray-100 pb-2">Technical Specifications</h4>
+                    @for (s of (product()?.defenderPlusSpecs || product()?.specifications); track s.label) {
+                      <div class="flex justify-between items-center border-b border-gray-50 pb-4">
+                        <span class="text-[9px] font-black uppercase tracking-widest text-gray-400">{{ s.label }}</span>
+                        <span class="text-xs font-bold italic">{{ s.value }}</span>
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Defender+ Features Second -->
+                  <div class="space-y-4">
+                    <h4 class="text-[10px] font-black uppercase tracking-widest text-brand-primary border-b border-gray-100 pb-2">Elite Armor Features</h4>
+                    <ul class="space-y-4">
+                      @for (tf of (product()?.defenderPlusFeatures || product()?.technicalFeatures); track tf) {
+                        <li class="flex gap-4 items-start group">
+                          <div class="w-5 h-5 rounded-lg bg-brand-primary text-white flex items-center justify-center flex-shrink-0 mt-1 shadow-lg shadow-brand-primary/20">
+                            <i class="fas fa-plus text-[9px]"></i>
+                          </div>
+                          <span class="text-gray-600 font-bold text-xs leading-relaxed">{{ tf }}</span>
+                        </li>
                       }
-                      @if (!product()?.specifications?.length) {
-                        <p class="text-xs text-gray-500 italic">Advanced specifications profile pending sync.</p>
-                      }
-                   </div>
+                    </ul>
+                  </div>
                 </div>
-             </div>
+              </div>
+            </div>
           </div>
         </section>
 
