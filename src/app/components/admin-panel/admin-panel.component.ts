@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { DataService } from '../../services/data.service';
 import { ApiService } from '../../services/api.service';
 import { Product, BlogPost, Category, AppData } from '../../models/types';
+import { processImageForUpload } from '../../shared/utils/image-utils';
 
 type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categories' | 'Blog Posts' | 'Inquiries' | 'Admin Management' | 'Profile';
 
@@ -1666,9 +1667,29 @@ export class AdminPanelComponent implements OnInit {
   }
 
   async onFileSelected(event: any, type: string, idx?: number) {
-    const file = event.target.files[0] as File;
+    let file = event.target.files[0] as File;
     if (!file) return;
     this.isProcessingImage.set(true);
+
+    try {
+      // Determine target dimensions based on type
+      let targetWidth = 800;
+      let targetHeight = 800;
+
+      if (type === 'slide') {
+        targetWidth = 1920;
+        targetHeight = 1080;
+      } else if (type === 'blog-edit' || type === 'blog') {
+        targetWidth = 1200;
+        targetHeight = 675;
+      }
+
+      file = await processImageForUpload(file, targetWidth, targetHeight, '#ffffff');
+    } catch (err) {
+      console.error('Image processing failed:', err);
+      // Fallback to original file if processing fails
+    }
+
     // Upload to server — images will be stored in dist/assets/uploads/
     const url = await this.apiService.uploadImage(file);
     if (url) {
