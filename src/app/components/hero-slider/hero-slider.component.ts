@@ -38,31 +38,8 @@ import { HeroSlide } from '../../models/types';
           </div>
 
           <div class="container mx-auto px-6 h-full flex items-center lg:items-end pb-20 md:pb-32 relative z-10 pt-20 lg:pt-0">
-            <div class="flex flex-col lg:flex-row items-center lg:items-end justify-between w-full gap-10 lg:gap-16">
-              
-              <!-- Product Element -->
-              <div class="w-full max-w-[240px] md:max-w-md xl:max-w-lg transition-all duration-1000 transform delay-700 order-1 lg:order-2"
-                   [class.translate-y-0]="index === current()" [class.opacity-100]="index === current()" [class.scale-100]="index === current()"
-                   [class.translate-y-12]="index !== current()" [class.opacity-0]="index !== current()" [class.scale-95]="index !== current()">
-                <div class="relative group">
-                  <div class="absolute -inset-16 md:-inset-24 bg-brand-primary/10 rounded-full blur-[100px] md:blur-[140px] group-hover:bg-brand-primary/20 transition-all duration-[2000ms]"></div>
-                  
-                  <img 
-                    [src]="slide.productImage || lockerImageUrl"
-                    class="relative z-10 w-full h-auto drop-shadow-[0_40px_60px_rgba(0,0,0,0.6)] md:drop-shadow-[0_60px_90px_rgba(0,0,0,0.7)] animate-float"
-                    alt="SafeSmart Security Unit"
-                  />
-                  
-                  <div class="absolute -top-4 -right-4 z-20 bg-brand-primary text-white p-3 md:p-6 rounded-2xl md:rounded-[32px] shadow-3xl transform rotate-12 border border-white/10 flex flex-col items-center">
-                    <span class="text-[7px] md:text-[9px] font-black uppercase tracking-widest">Grade I</span>
-                    <i class="fas fa-shield-halved text-sm md:text-xl my-0.5 md:my-1"></i>
-                    <span class="text-[6px] md:text-[8px] font-bold opacity-60">CERTIFIED</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Text Content -->
-              <div class="max-w-2xl text-center lg:text-left transform transition-all duration-1000 delay-300 order-2 lg:order-1"
+            <div class="flex flex-col items-center justify-center w-full gap-10">
+              <div class="max-w-4xl text-center mx-auto transform transition-all duration-1000 delay-300"
                    [class.translate-y-0]="index === current()" [class.opacity-100]="index === current()"
                    [class.translate-y-12]="index !== current()" [class.opacity-0]="index !== current()">
                 <span class="text-brand-primary font-black text-[10px] md:text-[11px] uppercase tracking-[0.4em] mb-4 md:mb-5 block animate-reveal">
@@ -73,11 +50,11 @@ import { HeroSlide } from '../../models/types';
                   {{ slide.title }}
                 </h1>
                 
-                <p class="text-xs md:text-sm lg:text-base text-brand-lightest mb-8 md:mb-10 max-w-lg mx-auto lg:mx-0 font-medium leading-relaxed opacity-70 italic">
+                <p class="text-xs md:text-sm lg:text-base text-brand-lightest mb-8 md:mb-10 max-w-lg mx-auto font-medium leading-relaxed opacity-70 italic">
                   {{ slide.subtitle }}
                 </p>
                 
-                <div class="flex flex-wrap justify-center lg:justify-start gap-3 md:gap-4">
+                <div class="flex flex-wrap justify-center gap-3 md:gap-4">
                   <a
                     [routerLink]="slide.ctaLink"
                     class="bg-brand-primary hover:bg-white hover:text-brand-darkest text-white px-8 md:px-10 py-3.5 md:py-4 rounded-xl font-black uppercase text-[9px] md:text-[10px] tracking-[0.2em] transition-all shadow-xl hover:scale-105 active:scale-95"
@@ -143,8 +120,7 @@ import { HeroSlide } from '../../models/types';
 export class HeroSliderComponent implements OnInit, OnDestroy {
     @Input({ required: true }) slides: HeroSlide[] = [];
 
-    current = signal(0);
-    lockerImageUrl = "assets/images/door-1-copy.png";
+  current = signal(0);
 
     private timer: any;
     private touchStart: number | null = null;

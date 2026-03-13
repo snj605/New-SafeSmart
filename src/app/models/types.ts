@@ -51,7 +51,6 @@ export interface HeroSlide {
   title: string;
   subtitle: string;
   image: string;
-  productImage?: string;
   cta: string;
   ctaLink: string;
 }

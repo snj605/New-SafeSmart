@@ -622,32 +622,63 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                                      </div>
                                  </div>
 
-                                 <!-- Product Image (New Field) -->
-                                 <div class="flex gap-4 items-center">
-                                    <div class="w-16 h-16 bg-white border rounded-xl flex-shrink-0 overflow-hidden">
-                                      @if (slide.productImage) { <img [src]="slide.productImage" class="w-full h-full object-contain p-2" /> }
-                                      @else { <div class="w-full h-full flex items-center justify-center text-slate-200"><i class="fas fa-shopping-bag text-xl"></i></div> }
-                                    </div>
-                                     <div class="flex-grow space-y-2">
-                                       <label class="text-[9px] font-black uppercase tracking-widest mb-1 block opacity-50">Floating Product Image</label>
-                                       <input
-                                         type="file"
-                                         [id]="'home-slide-prod-' + idx"
-                                         class="hidden"
-                                         (change)="onFileSelected($event, 'slide-product', idx)"
-                                       />
-                                       <label [for]="'home-slide-prod-' + idx" class="w-full block bg-white p-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"><i class="fas fa-cube text-xs"></i>Upload Product</label>
-                                       <div class="flex items-center gap-2">
-                                         <i class="fas fa-link text-gray-300 text-[8px]"></i>
-                                         <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[10px] border border-gray-100 outline-none" placeholder="Or paste product URL..." (change)="onUrlInput($any($event.target).value, 'slide-product', idx)" />
-                                       </div>
-                                     </div>
-                                 </div>
+
                               </div>
                             </div>
                           </div>
                         }
                         <button (click)="addSlide()" class="w-full py-8 rounded-3xl border-2 border-dashed border-gray-200 text-gray-400 font-black uppercase tracking-[0.2em] text-[10px] hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"><i class="fas fa-plus-circle"></i> New Hero Frame</button>
+                      </div>
+                    </div>
+
+                    <!-- Intro Section Configuration -->
+                    <div>
+                      <h3 class="text-[11px] font-black text-brand-darkest uppercase tracking-[0.4em] mb-10 border-l-8 border-brand-primary pl-6">Company Intro Section</h3>
+                      <div class="bg-white p-8 md:p-10 rounded-[40px] border border-slate-100 space-y-8 shadow-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div class="space-y-2">
+                            <label class="text-[9px] font-black uppercase tracking-widest opacity-50 ml-1">Tagline</label>
+                            <input class="w-full bg-slate-50 p-4 rounded-xl text-sm font-bold border outline-none" placeholder="e.g. Precision Engineering" [(ngModel)]="appData().content.home.intro.tagline" />
+                          </div>
+                          <div class="space-y-2">
+                            <label class="text-[9px] font-black uppercase tracking-widest opacity-50 ml-1">Title</label>
+                            <input class="w-full bg-slate-50 p-4 rounded-xl text-sm font-bold border outline-none" placeholder="Intro Title" [(ngModel)]="appData().content.home.intro.title" />
+                          </div>
+                        </div>
+
+                        <div class="space-y-2">
+                          <label class="text-[9px] font-black uppercase tracking-widest opacity-50 ml-1">Description</label>
+                          <textarea class="w-full bg-slate-50 p-4 rounded-xl text-sm border outline-none min-h-[120px]" placeholder="Company Introduction Description" [(ngModel)]="appData().content.home.intro.description"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-slate-50">
+                          <!-- Video URL -->
+                          <div class="space-y-2">
+                            <label class="text-[9px] font-black uppercase tracking-widest opacity-50 ml-1">Demo Video URL (Direct MP4)</label>
+                            <div class="flex items-center gap-2">
+                              <i class="fas fa-video text-slate-300"></i>
+                              <input class="flex-grow bg-slate-50 p-4 rounded-xl text-xs border outline-none font-mono" placeholder="https://example.com/video.mp4" [(ngModel)]="appData().content.home.intro.videoUrl" />
+                            </div>
+                            <p class="text-[8px] text-slate-400 italic">Provide a direct link to an MP4 video file.</p>
+                          </div>
+
+                          <!-- Poster Image -->
+                          <div class="flex gap-4 items-center">
+                            <div class="w-20 h-20 bg-slate-50 border rounded-2xl flex-shrink-0 overflow-hidden shadow-inner">
+                              @if (appData().content.home.intro.image) { <img [src]="appData().content.home.intro.image" class="w-full h-full object-cover" /> }
+                              @else { <div class="w-full h-full flex items-center justify-center text-slate-200"><i class="fas fa-image text-2xl"></i></div> }
+                            </div>
+                            <div class="flex-grow space-y-2">
+                              <label class="text-[9px] font-black uppercase tracking-widest mb-1 block opacity-50">Video Poster Image</label>
+                              <input type="file" id="intro-poster" class="hidden" (change)="onFileSelected($event, 'intro-image')" />
+                              <label for="intro-poster" class="w-full block bg-white p-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-dashed border-gray-300 text-center cursor-pointer hover:border-brand-primary hover:text-brand-primary transition-all flex items-center justify-center gap-2"><i class="fas fa-upload text-xs"></i>Upload Poster</label>
+                              <div class="flex items-center gap-2">
+                                <i class="fas fa-link text-gray-300 text-[8px]"></i>
+                                <input class="flex-grow bg-gray-50 p-2 rounded-xl text-[10px] border border-gray-100 outline-none" placeholder="Or paste image URL..." (change)="onUrlInput($any($event.target).value, 'intro-image')" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1682,6 +1713,9 @@ export class AdminPanelComponent implements OnInit {
       } else if (type === 'blog-edit' || type === 'blog') {
         targetWidth = 1200;
         targetHeight = 675;
+      } else if (type === 'intro-image') {
+        targetWidth = 1200;
+        targetHeight = 1200;
       }
 
       file = await processImageForUpload(file, targetWidth, targetHeight, '#ffffff');
@@ -1710,9 +1744,6 @@ export class AdminPanelComponent implements OnInit {
     if (type === 'slide' && idx !== undefined) {
       data.content.home.hero.slides[idx].image = url;
       this.appData.set({ ...data });
-    } else if (type === 'slide-product' && idx !== undefined) {
-      data.content.home.hero.slides[idx].productImage = url;
-      this.appData.set({ ...data });
     } else if (type === 'product') {
       this.editingProduct.set({ ...this.editingProduct()!, image: url });
     } else if (type === 'blog-edit') {
@@ -1722,6 +1753,9 @@ export class AdminPanelComponent implements OnInit {
       this.appData.set({ ...data });
     } else if (type === 'category' && idx !== undefined) {
       data.categories[idx].image = url;
+      this.appData.set({ ...data });
+    } else if (type === 'intro-image') {
+      data.content.home.intro.image = url;
       this.appData.set({ ...data });
     }
   }

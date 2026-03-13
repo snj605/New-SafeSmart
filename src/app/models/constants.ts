@@ -427,7 +427,6 @@ At SafeSmart, we believe that security is about preparing for the worst-case sce
                         title: "Protecting Your Legacy, Defining Your Future",
                         subtitle: "India's most advanced high-security newcomer, engineered for absolute asset integrity through 21st-century precision.",
                         image: 'assets/images/homepages-slide-1.jpg',
-                        productImage: 'assets/images/door-1-copy.png',
                         cta: 'View Collection',
                         ctaLink: '/category/all'
                     },
@@ -436,7 +435,6 @@ At SafeSmart, we believe that security is about preparing for the worst-case sce
                         title: "Uncompromising Industrial Security",
                         subtitle: 'From banking vaults to high-end retail, we provide the armor that global institutions trust.',
                         image: 'assets/images/DSCF0730-copy.jpg',
-                        productImage: 'assets/images/door-1-copy.png',
                         cta: 'Browse Vaults',
                         ctaLink: '/category/fire-&-burglar-safes'
                     },
@@ -445,7 +443,6 @@ At SafeSmart, we believe that security is about preparing for the worst-case sce
                         title: "The Science of Absolute Defense",
                         subtitle: 'Proprietary composite barriers designed to defeat modern high-torque tools and thermal attacks.',
                         image: 'assets/images/DSCF0742-copy.jpg',
-                        productImage: 'assets/images/door-1-copy.png',
                         cta: 'Read Intelligence',
                         ctaLink: '/blog'
                     }
