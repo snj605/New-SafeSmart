@@ -37,7 +37,7 @@ import { HeroSlide } from '../../models/types';
             <div class="absolute inset-0 bg-gradient-to-t from-brand-darkest via-brand-darkest/40 to-transparent"></div>
           </div>
 
-          <div class="container mx-auto px-6 h-full flex items-center lg:items-end pb-12 md:pb-32 relative z-10 pt-16 lg:pt-0">
+          <div class="container mx-auto px-6 h-full flex items-end lg:items-end pb-12 md:pb-32 relative z-10 pt-16 lg:pt-0">
             <div class="flex flex-col items-center justify-center w-full gap-10">
               <div class="max-w-4xl text-center mx-auto transform transition-all duration-1000 delay-300"
                    [class.translate-y-0]="index === current()" [class.opacity-100]="index === current()"

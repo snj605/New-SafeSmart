@@ -26,6 +26,10 @@ export async function processImageForUpload(
       ctx.fillStyle = fillColor;
       ctx.fillRect(0, 0, targetWidth, targetHeight);
 
+      // Enable high-quality smoothing
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
       // 4. Calculate scaling factor to "contain" the image
       const scaleX = targetWidth / img.width;
       const scaleY = targetHeight / img.height;
@@ -64,7 +68,7 @@ export async function processImageForUpload(
           resolve(processedFile);
         },
         'image/jpeg',
-        0.9 // Quality: 90%
+        0.95 // Quality: 95% (Higher clarity)
       );
     };
 

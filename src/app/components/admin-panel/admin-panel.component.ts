@@ -1708,12 +1708,15 @@ export class AdminPanelComponent implements OnInit {
       let targetHeight = 800;
 
       if (type === 'slide') {
-        targetWidth = 1920;
-        targetHeight = 1080;
+        targetWidth = 2560;
+        targetHeight = 1440;
       } else if (type === 'blog-edit' || type === 'blog') {
-        targetWidth = 1200;
-        targetHeight = 675;
+        targetWidth = 1600;
+        targetHeight = 900;
       } else if (type === 'intro-image') {
+        targetWidth = 1600;
+        targetHeight = 1600;
+      } else if (type === 'product' || type === 'category') {
         targetWidth = 1200;
         targetHeight = 1200;
       }
