@@ -1,5 +1,5 @@
 
-import { Component, computed } from '@angular/core';
+import { Component, computed, OnInit, AfterViewInit, OnDestroy, ElementRef, QueryList, ViewChildren, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DataService } from '../../services/data.service';
@@ -22,13 +22,18 @@ import { DataService } from '../../services/data.service';
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             @for (blog of blogs(); track blog.id) {
               <a 
+                #blogCard
+                [attr.data-id]="blog.id"
                 [routerLink]="['/blog', blog.slug]" 
                 class="bg-brand-body rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all group border border-brand-navBorder"
               >
-                <div class="h-64 overflow-hidden">
+                <div class="h-64 overflow-hidden bg-white">
                   <img 
                     [src]="blog.image" 
-                    class="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                    class="w-full h-full object-contain group-hover:scale-105 transition duration-500"
+                    [class.opacity-100]="activeBlogId() === blog.id"
+                    [class.opacity-60]="activeBlogId() !== blog.id"
+                    [class.lg:opacity-100]="true"
                     [alt]="blog.title" 
                   />
                 </div>
@@ -57,8 +62,51 @@ import { DataService } from '../../services/data.service';
   `,
   styles: []
 })
-export class BlogListComponent {
+export class BlogListComponent implements OnInit, AfterViewInit, OnDestroy {
   blogs = computed(() => this.dataService.getBlogs());
 
+  @ViewChildren('blogCard') blogCards!: QueryList<ElementRef>;
+  activeBlogId = signal<string | null>(null);
+  private observer: IntersectionObserver | null = null;
+
   constructor(private dataService: DataService) {}
+
+  ngOnInit() { }
+
+  ngAfterViewInit() {
+    this.setupIntersectionObserver();
+  }
+
+  ngOnDestroy() {
+    if (this.observer) this.observer.disconnect();
+  }
+
+  private setupIntersectionObserver() {
+    if (typeof window === 'undefined') return;
+
+    const options = {
+      root: null,
+      rootMargin: '-20% 0px -20% 0px',
+      threshold: 0.1
+    };
+
+    this.observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('data-id');
+          this.activeBlogId.set(id);
+        }
+      });
+    }, options);
+
+    this.blogCards.changes.subscribe(() => {
+      this.blogCards.forEach(card => this.observer?.observe(card.nativeElement));
+    });
+
+    this.blogCards.forEach(card => this.observer?.observe(card.nativeElement));
+
+    // Default to first blog if available
+    const currentBlogs = this.blogs();
+    if (currentBlogs.length > 0) this.activeBlogId.set(currentBlogs[0].id);
+  }
 }

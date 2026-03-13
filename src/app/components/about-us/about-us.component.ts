@@ -12,11 +12,13 @@ import { DataService } from '../../services/data.service';
     <div class="animate-fade-in bg-brand-body text-brand-mainText font-sans">
       <!-- Cinematic Hero Section -->
       <section class="h-[50vh] md:h-[80vh] relative overflow-hidden bg-brand-darkest">
-        <img 
-          src="https://images.unsplash.com/photo-1541339907198-e08759df9a73?q=80&w=1920" 
-          class="w-full h-full object-cover opacity-50 scale-110" 
-          alt="Security Heritage" 
-        />
+        <div class="absolute inset-0 z-0 bg-brand-darkest">
+          <img
+            [src]="about().image"
+            class="w-full h-full object-contain opacity-50 scale-110"
+            alt="About SafeSmart"
+          />
+        </div>
         <div class="absolute inset-0 bg-gradient-to-t from-brand-darkest via-brand-darkest/70 to-transparent flex items-end">
           <div class="container mx-auto px-6 py-16 md:py-24">
             <div class="max-w-4xl">
@@ -41,14 +43,14 @@ import { DataService } from '../../services/data.service';
             <div class="w-full lg:w-1/2 relative">
                <div class="absolute -top-16 -left-16 w-64 h-64 bg-brand-primary/5 rounded-full blur-[80px]"></div>
                <div class="relative z-10 group">
-                  <div class="relative rounded-[48px] md:rounded-[64px] overflow-hidden border-[8px] md:border-[12px] border-white shadow-2xl">
-                    <img 
-                      [src]="about().image" 
-                      class="w-full h-[450px] md:h-[650px] object-cover group-hover:scale-105 transition-transform duration-[3000ms]" 
-                      alt="The SafeSmart Promise" 
-                    />
-                    <div class="absolute inset-0 bg-brand-darkest/20 group-hover:bg-transparent transition duration-700"></div>
-                  </div>
+                    <div class="aspect-square rounded-[48px] overflow-hidden shadow-3xl border-8 border-white bg-white">
+                      <img
+                        [src]="about().image"
+                        class="w-full h-[450px] md:h-[650px] object-contain group-hover:scale-105 transition-transform duration-[3000ms]"
+                        alt="Manufacturing Excellence"
+                      />
+                    </div>
+                  <div class="absolute inset-0 bg-brand-darkest/20 group-hover:bg-transparent transition duration-700"></div>
                   <div class="absolute -bottom-8 -right-8 md:-bottom-12 md:-right-12 bg-brand-primary text-white p-8 md:p-12 rounded-[40px] md:rounded-[56px] shadow-3xl max-w-[260px] md:max-w-[320px] transform hover:scale-105 transition duration-500">
                     <h4 class="text-3xl md:text-4xl font-black italic mb-2 tracking-tighter leading-none">Trust</h4>
                     <p class="text-[10px] md:text-[11px] font-black uppercase tracking-widest leading-relaxed opacity-90">Forged in Absolute Integrity and Human Connection</p>
@@ -110,7 +112,10 @@ import { DataService } from '../../services/data.service';
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
              @for (item of manufacturingGallery; track item.title; let idx = $index) {
                <div class="h-[400px] md:h-[500px] rounded-[48px] md:rounded-[64px] overflow-hidden group shadow-2xl relative" [class.md:translate-y-16]="idx === 1">
-                 <img [src]="item.img" class="w-full h-full object-cover group-hover:scale-110 transition duration-1000" [alt]="item.title" />
+                 <div class="h-48 md:h-64 overflow-hidden relative bg-white">
+                   <img [src]="item.img" class="w-full h-full object-contain group-hover:scale-110 transition duration-1000" [alt]="item.title" />
+                   <div class="absolute inset-0 bg-brand-darkest/10 group-hover:bg-transparent transition duration-500"></div>
+                 </div>
                  <div class="absolute inset-0 bg-gradient-to-t from-brand-darkest/80 via-transparent to-transparent flex items-end p-8 md:p-12 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                     <div>
                       <span class="text-brand-primary text-[9px] font-black uppercase tracking-[0.4em] mb-3 block">{{ item.tag }}</span>

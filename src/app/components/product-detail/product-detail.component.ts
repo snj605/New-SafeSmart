@@ -36,8 +36,8 @@ import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
           <div class="container mx-auto px-6">
             <div class="flex flex-col lg:flex-row gap-20 items-start">
               <div class="w-full lg:w-1/2">
-                <div class="rounded-[40px] overflow-hidden shadow-2xl bg-white border border-gray-100 p-3">
-                  <img [src]="product()?.image" [alt]="product()?.name" class="w-full h-auto object-cover rounded-[32px]" />
+                <div class="rounded-[40px] overflow-hidden shadow-2xl bg-white border border-gray-100 p-3 flex justify-center items-center h-[400px] md:h-[600px]">
+                  <img [src]="product()?.image" [alt]="product()?.name" class="w-full h-full object-contain rounded-[32px]" />
                 </div>
               </div>
 

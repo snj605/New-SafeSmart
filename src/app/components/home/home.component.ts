@@ -50,9 +50,9 @@ import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
             </div>
             
             <div class="w-full lg:w-1/2 relative animate-reveal stagger-2">
-              <div class="aspect-video lg:aspect-square bg-brand-darkest rounded-[32px] md:rounded-[48px] overflow-hidden shadow-3xl border-4 md:border-8 border-brand-body group relative">
+              <div class="aspect-video lg:aspect-square bg-white rounded-[32px] md:rounded-[48px] overflow-hidden shadow-3xl border-4 md:border-8 border-brand-body group relative">
                 <video 
-                  class="w-full h-full object-cover" 
+                  class="w-full h-full object-contain"
                   autoPlay 
                   muted 
                   loop 
@@ -104,7 +104,7 @@ import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
                         [src]="cat.image"
                         loading="lazy"
                         decoding="async"
-                        class="w-full h-full object-cover transition-all duration-700 scale-100 group-hover:scale-110"
+                        class="w-full h-full object-contain transition-all duration-700 scale-100 group-hover:scale-105"
                         [class.opacity-100]="activeCategoryId() === cat.id"
                         [class.opacity-60]="activeCategoryId() !== cat.id"
                         [class.grayscale-0]="true"
@@ -155,10 +155,10 @@ import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
               </div>
             </div>
             <div class="w-full lg:w-1/2 animate-reveal stagger-2">
-              <div class="rounded-[40px] overflow-hidden shadow-3xl border-8 border-white">
+              <div class="rounded-[40px] overflow-hidden shadow-3xl border-8 border-white bg-white">
                 <img 
                   [src]="homeContent().rangeShowcaseImage" 
-                  class="w-full h-auto object-cover hover:scale-105 transition duration-700" 
+                  class="w-full h-auto object-contain hover:scale-105 transition duration-700"
                   alt="SafeSmart Product Range" 
                 />
               </div>
@@ -256,8 +256,8 @@ import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
               @for (blog of blogs().slice(0, 3); track blog.id; let idx = $index) {
                 <a [routerLink]="['/blog', blog.slug]" class="group bg-brand-body rounded-[32px] md:rounded-[40px] overflow-hidden shadow-sm transition-all duration-300 hover-lift border border-brand-navBorder animate-reveal"
                    [class]="'stagger-' + (idx + 1)">
-                  <div class="h-56 md:h-64 overflow-hidden relative">
-                    <img [src]="blog.image" loading="lazy" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" [alt]="blog.title" />
+                  <div class="h-56 md:h-64 overflow-hidden relative bg-white">
+                    <img [src]="blog.image" loading="lazy" class="w-full h-full object-contain group-hover:scale-110 transition duration-500" [alt]="blog.title" />
                     <div class="absolute top-4 left-4 md:top-6 md:left-6 bg-brand-primary text-white text-[8px] font-black uppercase tracking-widest px-4 py-1.5 rounded-full">
                       {{ blog.date }}
                     </div>

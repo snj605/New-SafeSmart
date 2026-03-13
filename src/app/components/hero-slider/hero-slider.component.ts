@@ -24,11 +24,11 @@ import { HeroSlide } from '../../models/types';
           [class.z-0]="index !== current()"
         >
           <!-- Background Layer with Zoom Effect -->
-          <div class="absolute inset-0 z-0">
+          <div class="absolute inset-0 z-0 bg-white">
             <img 
               [src]="slide.image" 
-              class="w-full h-full object-contain md:object-cover transition-transform duration-[20000ms] ease-out"
-              [class.scale-125]="index === current() && !isMobile"
+              class="w-full h-full object-contain transition-transform duration-[20000ms] ease-out"
+              [class.scale-105]="index === current() && !isMobile"
               [class.scale-100]="index !== current() || isMobile"
               [alt]="slide.title" 
               [loading]="index === 0 ? 'eager' : 'lazy'"

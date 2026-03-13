@@ -1,5 +1,5 @@
 
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, AfterViewInit, OnDestroy, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DataService } from '../../services/data.service';
@@ -33,14 +33,21 @@ import { Product, Category } from '../../models/types';
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
               @for (product of filteredProducts(); track product.id) {
                 <a 
+                  #productCard
+                  [attr.data-id]="product.id"
                   [routerLink]="['/product', product.id]"
-                  class="group relative h-[550px] rounded-[48px] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700 border border-gray-100 flex flex-col justify-end p-6 hover:-translate-y-2"
+                  class="group relative h-[550px] rounded-[48px] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700 border border-gray-100 flex flex-col justify-end p-6 hover:-translate-y-2 bg-white"
                 >
                   <!-- Background Asset Layer -->
-                  <div class="absolute inset-0 z-0">
-                    <img [src]="product.image" [alt]="product.name" class="w-full h-full object-cover transition-all duration-[1.5s] ease-out group-hover:scale-110 group-hover:rotate-1" />
+                  <div class="absolute inset-0 z-0 bg-white">
+                    <img [src]="product.image" [alt]="product.name"
+                         class="w-full h-full object-contain transition-all duration-700 ease-out group-hover:scale-105"
+                         [class.opacity-100]="activeProductId() === product.id"
+                         [class.opacity-60]="activeProductId() !== product.id"
+                         [class.lg:opacity-100]="true"
+                    />
                     <!-- Dynamic Overlay -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-brand-darkest/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-brand-darkest/40 via-transparent to-transparent opacity-60 group-hover:opacity-20 transition-opacity"></div>
                   </div>
 
                   <!-- Tag Entity -->
@@ -73,9 +80,13 @@ import { Product, Category } from '../../models/types';
   `,
   styles: []
 })
-export class ProductCategoryComponent implements OnInit {
+export class ProductCategoryComponent implements OnInit, AfterViewInit, OnDestroy {
   categorySlug = signal<string>('all');
   
+  @ViewChildren('productCard') productCards!: QueryList<ElementRef>;
+  activeProductId = signal<string | null>(null);
+  private observer: IntersectionObserver | null = null;
+
   filteredProducts = computed(() => {
     const slug = this.categorySlug();
     const allProducts = this.dataService.getProducts();
@@ -105,6 +116,43 @@ export class ProductCategoryComponent implements OnInit {
         this.categorySlug.set(cat);
       }
     });
+  }
+
+  ngAfterViewInit() {
+    this.setupIntersectionObserver();
+  }
+
+  ngOnDestroy() {
+    if (this.observer) this.observer.disconnect();
+  }
+
+  private setupIntersectionObserver() {
+    if (typeof window === 'undefined') return;
+
+    const options = {
+      root: null,
+      rootMargin: '-20% 0px -20% 0px',
+      threshold: 0.1
+    };
+
+    this.observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('data-id');
+          this.activeProductId.set(id);
+        }
+      });
+    }, options);
+
+    this.productCards.changes.subscribe(() => {
+      this.productCards.forEach(card => this.observer?.observe(card.nativeElement));
+    });
+
+    this.productCards.forEach(card => this.observer?.observe(card.nativeElement));
+
+    // Default to first product if available
+    const products = this.filteredProducts();
+    if (products.length > 0) this.activeProductId.set(products[0].id);
   }
 
   private slugify(text: string): string {

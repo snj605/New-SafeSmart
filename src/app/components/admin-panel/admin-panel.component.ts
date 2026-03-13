@@ -604,7 +604,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                                  <!-- Background Image -->
                                  <div class="flex gap-4 items-center">
                                     <div class="w-16 h-16 bg-white border rounded-xl flex-shrink-0 overflow-hidden">
-                                      @if (slide.image) { <img [src]="slide.image" class="w-full h-full object-cover" /> }
+                                      @if (slide.image) { <img [src]="slide.image" class="w-full h-full object-contain bg-white" /> }
                                     </div>
                                      <div class="flex-grow space-y-2">
                                        <label class="text-[9px] font-black uppercase tracking-widest mb-1 block opacity-50">Background Image</label>
@@ -665,7 +665,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                           <!-- Poster Image -->
                           <div class="flex gap-4 items-center">
                             <div class="w-20 h-20 bg-slate-50 border rounded-2xl flex-shrink-0 overflow-hidden shadow-inner">
-                              @if (appData().content.home.intro.image) { <img [src]="appData().content.home.intro.image" class="w-full h-full object-cover" /> }
+                              @if (appData().content.home.intro.image) { <img [src]="appData().content.home.intro.image" class="w-full h-full object-contain bg-white" /> }
                               @else { <div class="w-full h-full flex items-center justify-center text-slate-200"><i class="fas fa-image text-2xl"></i></div> }
                             </div>
                             <div class="flex-grow space-y-2">
@@ -794,7 +794,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                         <div class="p-6 bg-gray-50 rounded-3xl border border-gray-100 flex items-center justify-between group hover:bg-white hover:shadow-xl transition-all">
                           <div class="flex items-center gap-6">
                             <div class="w-16 h-10 bg-gray-200 rounded-lg overflow-hidden">
-                               <img [src]="post.image" class="w-full h-full object-cover" />
+                               <img [src]="post.image" class="w-full h-full object-contain bg-white" />
                             </div>
                             <div>
                               <input class="bg-transparent font-black text-brand-darkest uppercase italic tracking-tighter text-sm outline-none border-b border-transparent focus:border-brand-primary" [(ngModel)]="post.title" />
@@ -1057,7 +1057,7 @@ type AdminPage = 'Home Page' | 'About Us' | 'Contact Info' | 'Products' | 'Categ
                   <label class="block text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Cover Image</label>
                   <div class="flex gap-4 items-center">
                     <div class="w-32 h-20 bg-gray-50 border rounded-2xl overflow-hidden flex-shrink-0">
-                      @if (editingBlog()!.image) { <img [src]="editingBlog()!.image" class="w-full h-full object-cover" /> }
+                      @if (editingBlog()!.image) { <img [src]="editingBlog()!.image" class="w-full h-full object-contain bg-white" /> }
                     </div>
                     <div class="flex-grow space-y-2">
                       <input type="file" id="blog-img-upload" class="hidden" (change)="onFileSelected($event, 'blog-edit')" />

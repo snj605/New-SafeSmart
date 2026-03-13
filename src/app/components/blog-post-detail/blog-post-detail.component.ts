@@ -20,8 +20,10 @@ import { BlogPost } from '../../models/types';
       </div>
 
       @if (blog()) {
-        <div class="h-[75vh] relative">
-          <img [src]="blog()!.image" class="w-full h-full object-cover" [alt]="blog()!.title" />
+        <div class="h-[300px] md:h-[500px] overflow-hidden bg-white">
+          <img [src]="blog()!.image" class="w-full h-full object-contain" [alt]="blog()!.title" />
+        </div>
+        <div class="relative -mt-[300px] md:-mt-[500px] h-[300px] md:h-[500px] flex items-end">
           <div class="absolute inset-0 bg-gradient-to-t from-brand-darkest via-brand-darkest/60 to-transparent flex items-end">
             <div class="container mx-auto px-6 py-20">
               <div class="max-w-4xl">
@@ -64,12 +66,12 @@ import { BlogPost } from '../../models/types';
                   <!-- Interspersed Gallery Image 1 -->
                   @if (idx === 1 && gallery()[0]) {
                     <div class="my-20 group">
-                      <figure class="rounded-[48px] overflow-hidden shadow-2xl border-8 border-white group-hover:border-brand-alt transition-colors duration-500 hover-lift">
-                        <img [src]="gallery()[0]" alt="Industrial Process" class="w-full h-auto object-cover max-h-[550px] group-hover:scale-105 transition-transform duration-[3000ms]" />
-                        <figcaption class="bg-brand-alt p-8 text-[11px] font-black uppercase tracking-widest text-brand-primary text-center">
+                      <div class="group overflow-hidden rounded-[24px] md:rounded-[40px] shadow-2xl border-4 md:border-8 border-white bg-white">
+                        <img [src]="gallery()[0]" alt="Industrial Process" class="w-full h-auto object-contain max-h-[550px] group-hover:scale-105 transition-transform duration-[3000ms]" />
+                      </div>
+                      <figcaption class="bg-brand-alt p-8 text-[11px] font-black uppercase tracking-widest text-brand-primary text-center">
                           <i class="fas fa-microscope mr-2"></i> Technical Precision: Automated Manufacturing Protocols at SafeSmart Headquarters
                         </figcaption>
-                      </figure>
                     </div>
                   }
 
@@ -93,9 +95,10 @@ import { BlogPost } from '../../models/types';
                   <!-- Interspersed Gallery Image 2 -->
                   @if (idx === 3 && gallery()[1]) {
                     <div class="my-20 -mx-6 md:-mx-32">
-                      <div class="relative h-[450px] md:h-[650px] rounded-[64px] overflow-hidden shadow-3xl group cursor-crosshair">
-                        <img [src]="gallery()[1]" alt="Modern Security Detail" class="w-full h-full object-cover group-hover:scale-110 transition duration-[5000ms]" />
-                        <div class="absolute inset-0 bg-gradient-to-t from-brand-darkest/70 via-transparent to-transparent"></div>
+                      <div class="group overflow-hidden rounded-[24px] md:rounded-[40px] shadow-2xl border-4 md:border-8 border-white h-full min-h-[300px] bg-white">
+                        <img [src]="gallery()[1]" alt="Modern Security Detail" class="w-full h-full object-contain group-hover:scale-110 transition duration-[5000ms]" />
+                      </div>
+                      <div class="absolute inset-0 bg-gradient-to-t from-brand-darkest/70 via-transparent to-transparent"></div>
                         <div class="absolute bottom-12 left-12 right-12 flex items-end justify-between">
                            <div>
                              <p class="text-brand-primary text-[10px] font-black uppercase tracking-[0.4em] mb-2">Quality Control Manifest</p>
@@ -105,7 +108,6 @@ import { BlogPost } from '../../models/types';
                               2024 REV
                            </div>
                         </div>
-                      </div>
                     </div>
                   }
 
@@ -113,12 +115,12 @@ import { BlogPost } from '../../models/types';
                   @if (idx === 5 && gallery()[2]) {
                     <div class="my-20 float-right w-full md:w-1/2 md:ml-16 md:mb-16">
                       <div class="bg-brand-alt p-6 rounded-[48px] shadow-2xl border border-brand-navBorder group transform hover:rotate-3 transition duration-500">
-                        <div class="overflow-hidden rounded-[40px] relative">
-                           <img [src]="gallery()[2]" alt="Lab Testing" class="w-full h-auto object-cover aspect-square group-hover:scale-110 transition-transform duration-700" />
-                           <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl">
+                        <div class="group overflow-hidden rounded-[20px] md:rounded-[32px] shadow-xl border-4 border-white bg-white">
+                           <img [src]="gallery()[2]" alt="Lab Testing" class="w-full h-auto object-contain aspect-square group-hover:scale-110 transition-transform duration-700" />
+                        </div>
+                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl">
                               <i class="fas fa-vial text-brand-primary"></i>
                            </div>
-                        </div>
                         <p class="mt-6 text-[10px] font-black uppercase tracking-widest text-center text-brand-mutedText">
                            <i class="fas fa-check-circle text-green-500 mr-2"></i> Lab Verification Analysis
                         </p>
@@ -129,8 +131,8 @@ import { BlogPost } from '../../models/types';
                    <!-- Final Gallery Image -->
                    @if (idx === paragraphs().length - 1 && gallery()[3]) {
                     <div class="mt-20">
-                      <div class="rounded-[40px] overflow-hidden shadow-xl border border-brand-navBorder group aspect-[21/9]">
-                        <img [src]="gallery()[3]" alt="Strategic Deployment" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" />
+                      <div class="group overflow-hidden rounded-[20px] md:rounded-[32px] shadow-xl border-4 border-white h-full bg-white">
+                        <img [src]="gallery()[3]" alt="Strategic Deployment" class="w-full h-full object-contain group-hover:scale-105 transition duration-700" />
                       </div>
                     </div>
                   }
