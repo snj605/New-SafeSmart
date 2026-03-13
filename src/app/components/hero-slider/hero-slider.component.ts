@@ -10,7 +10,7 @@ import { HeroSlide } from '../../models/types';
     imports: [CommonModule, RouterLink],
     template: `
     <section 
-      class="relative min-h-[90vh] md:h-screen overflow-hidden bg-brand-darkest touch-pan-y"
+      class="relative h-[60vh] md:h-screen overflow-hidden bg-brand-darkest touch-pan-y"
       (touchstart)="onTouchStart($event)"
       (touchmove)="onTouchMove($event)"
       (touchend)="onTouchEnd()"
@@ -27,9 +27,9 @@ import { HeroSlide } from '../../models/types';
           <div class="absolute inset-0 z-0">
             <img 
               [src]="slide.image" 
-              class="w-full h-full object-cover transition-transform duration-[20000ms] ease-out"
-              [class.scale-125]="index === current()"
-              [class.scale-100]="index !== current()"
+              class="w-full h-full object-contain md:object-cover transition-transform duration-[20000ms] ease-out"
+              [class.scale-125]="index === current() && !isMobile"
+              [class.scale-100]="index !== current() || isMobile"
               [alt]="slide.title" 
               [loading]="index === 0 ? 'eager' : 'lazy'"
             />
@@ -37,20 +37,20 @@ import { HeroSlide } from '../../models/types';
             <div class="absolute inset-0 bg-gradient-to-t from-brand-darkest via-brand-darkest/40 to-transparent"></div>
           </div>
 
-          <div class="container mx-auto px-6 h-full flex items-center lg:items-end pb-20 md:pb-32 relative z-10 pt-20 lg:pt-0">
+          <div class="container mx-auto px-6 h-full flex items-center lg:items-end pb-12 md:pb-32 relative z-10 pt-16 lg:pt-0">
             <div class="flex flex-col items-center justify-center w-full gap-10">
               <div class="max-w-4xl text-center mx-auto transform transition-all duration-1000 delay-300"
                    [class.translate-y-0]="index === current()" [class.opacity-100]="index === current()"
                    [class.translate-y-12]="index !== current()" [class.opacity-0]="index !== current()">
-                <span class="text-brand-primary font-black text-[10px] md:text-[11px] uppercase tracking-[0.4em] mb-4 md:mb-5 block animate-reveal">
+                <span class="text-brand-primary font-black text-[9px] md:text-[11px] uppercase tracking-[0.4em] mb-3 md:mb-5 block animate-reveal">
                    Legacy of Protection
                 </span>
                 
-                <h1 class="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-white uppercase italic tracking-tighter leading-tight mb-5 md:mb-7 drop-shadow-2xl">
+                <h1 class="text-xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-white uppercase italic tracking-tighter leading-tight mb-4 md:mb-7 drop-shadow-2xl">
                   {{ slide.title }}
                 </h1>
                 
-                <p class="text-xs md:text-sm lg:text-base text-brand-lightest mb-8 md:mb-10 max-w-lg mx-auto font-medium leading-relaxed opacity-70 italic">
+                <p class="text-[10px] md:text-sm lg:text-base text-brand-lightest mb-6 md:mb-10 max-w-lg mx-auto font-medium leading-relaxed opacity-70 italic">
                   {{ slide.subtitle }}
                 </p>
                 
@@ -121,6 +121,7 @@ export class HeroSliderComponent implements OnInit, OnDestroy {
     @Input({ required: true }) slides: HeroSlide[] = [];
 
   current = signal(0);
+  isMobile = false;
 
     private timer: any;
     private touchStart: number | null = null;
@@ -128,11 +129,18 @@ export class HeroSliderComponent implements OnInit, OnDestroy {
     private minSwipeDistance = 50;
 
     ngOnInit() {
+      this.checkMobile();
         this.startTimer();
+      window.addEventListener('resize', this.checkMobile.bind(this));
     }
 
     ngOnDestroy() {
         this.stopTimer();
+    window.removeEventListener('resize', this.checkMobile.bind(this));
+  }
+
+  private checkMobile() {
+    this.isMobile = window.innerWidth <= 768;
     }
 
     handleNext() {
