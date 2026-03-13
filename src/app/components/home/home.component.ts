@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, signal, computed } from '@angular/core';
+import { Component, Input, OnInit, signal, computed, AfterViewInit, OnDestroy, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DataService } from '../../services/data.service';
@@ -93,8 +93,10 @@ import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
             } @else {
               @for (cat of categories(); track cat.id; let idx = $index) {
                 <a
+                  #categoryCard
+                  [attr.data-id]="cat.id"
                   [routerLink]="['/category', slugify(cat.name)]"
-                  class="group relative h-[380px] md:h-[450px] rounded-[32px] md:rounded-[48px] overflow-hidden shadow-sm transition-all duration-300 flex flex-col justify-end p-8 md:p-10 border border-brand-navBorder hover-lift animate-reveal"
+                  class="group relative h-[380px] md:h-[450px] rounded-[32px] md:rounded-[48px] overflow-hidden shadow-sm transition-all duration-500 flex flex-col justify-end p-8 md:p-10 border border-brand-navBorder hover-lift animate-reveal"
                   [class]="'stagger-' + ((idx % 3) + 1)"
                 >
                   <div class="absolute inset-0 overflow-hidden">
@@ -102,7 +104,11 @@ import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
                         [src]="cat.image"
                         loading="lazy"
                         decoding="async"
-                        class="w-full h-full object-cover transition duration-700 scale-100 group-hover:scale-110 opacity-30 grayscale-[0.8] lg:grayscale lg:opacity-10 lg:group-hover:grayscale-0 lg:group-hover:opacity-40"
+                        class="w-full h-full object-cover transition-all duration-700 scale-100 group-hover:scale-110 grayscale-0"
+                        [class.opacity-100]="activeCategoryId() === cat.id"
+                        [class.opacity-80]="activeCategoryId() !== cat.id"
+                        [class.lg:opacity-80]="activeCategoryId() !== cat.id"
+                        [class.lg:group-hover:opacity-100]="true"
                         [alt]="cat.name"
                       />
                   </div>
@@ -290,16 +296,55 @@ import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
   `,
   styles: []
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   appData = computed(() => this.dataService.getAppData());
   homeContent = computed(() => this.appData().content.home);
   categories = computed(() => this.dataService.getCategories());
   blogs = computed(() => this.dataService.getBlogs());
   secondaryLoading = computed(() => this.dataService.isSecondaryLoading());
 
+  @ViewChildren('categoryCard') categoryCards!: QueryList<ElementRef>;
+  activeCategoryId = signal<string | null>(null);
+  private observer: IntersectionObserver | null = null;
+
   constructor(private dataService: DataService) { }
 
   ngOnInit() { }
+
+  ngAfterViewInit() {
+    this.setupIntersectionObserver();
+  }
+
+  ngOnDestroy() {
+    if (this.observer) this.observer.disconnect();
+  }
+
+  private setupIntersectionObserver() {
+    // Only use for smaller screens where hover doesn't exist/work well
+    if (typeof window === 'undefined') return;
+
+    const options = {
+      root: null,
+      rootMargin: '-40% 0px -40% 0px', // Focused in middle 20% of screen
+      threshold: 0
+    };
+
+    this.observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.getAttribute('data-id');
+          this.activeCategoryId.set(id);
+        }
+      });
+    }, options);
+
+    this.categoryCards.changes.subscribe(() => {
+      this.categoryCards.forEach(card => this.observer?.observe(card.nativeElement));
+    });
+
+    // Initial observation
+    this.categoryCards.forEach(card => this.observer?.observe(card.nativeElement));
+  }
 
   slugify(text: string): string {
     return text.replace(/\s+/g, '-').toLowerCase();
